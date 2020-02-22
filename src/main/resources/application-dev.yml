@@ -1,0 +1,11 @@
+snail:
+  okr:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: seblong
+      maxTotal: 32
+      maxIdle: 8
+      testOnIdle: true
+    mongodb:
+      url: mongodb://root:seblong2015@127.0.0.1:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
