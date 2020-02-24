@@ -11,7 +11,7 @@ import com.seblong.okr.entities.OKRPeriod;
 @Repository
 public interface OKRPeriodRepository extends MongoRepository<OKRPeriod, ObjectId>{
 
-	List<OKRPeriod> findByYear( int year );
+	List<OKRPeriod> findByYear(int year);
 	
-	long countByYear( int year );
+	long countByYear(int year);
 }

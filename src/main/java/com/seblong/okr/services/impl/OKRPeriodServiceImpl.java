@@ -36,7 +36,7 @@ public class OKRPeriodServiceImpl implements OKRPeriodService {
 		return okrPeriodRepo.countByYear(year) > 0;
 	}
 
-	@Scheduled(cron = "0 50 12 31 12 ? *")
+	@Scheduled(cron = "0 50 12 31 12 ?")
 	@Override
 	public void add() {
 		int year = Calendar.getInstance().get(Calendar.YEAR);
