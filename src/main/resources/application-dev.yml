@@ -1,11 +1,16 @@
 snail:
   okr:
     redis:
-      host: 127.0.0.1
+      host: 182.254.245.148
       port: 6379
       password: seblong
       maxTotal: 32
       maxIdle: 8
       testOnIdle: true
     mongodb:
-      url: mongodb://root:seblong2015@127.0.0.1:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+      url: mongodb://root:seblong2015@182.254.245.148:27017/seblong?authSource=admin&maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+    wechat:
+      appid: 1000009
+      secret: hGd_QdLN2vPcaU4OfrGete4cQQKIPWHlZQcEEHzEXP0
+      redirectUri: https://redirectUrl
+      authUrl: https://open.weixin.qq.com/connect/oauth2/authorize
