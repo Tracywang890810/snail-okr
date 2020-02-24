@@ -182,7 +182,7 @@ public class APIOKRController {
 			throw new ValidationException(404, "period-not-exist");
 		}
 		if (estimate > 0 && (estimate <= okrPeriod.getStart() || estimate >= okrPeriod.getEnd())) {
-			throw new ValidationException(400, "invalid-period");
+			throw new ValidationException(400, "invalid-estimate");
 		}
 	}
 
