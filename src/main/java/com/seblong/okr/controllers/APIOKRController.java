@@ -110,6 +110,7 @@ public class APIOKRController {
 			@RequestParam(value = "confidence", required = true) double confidence,
 			@RequestParam(value = "weight", required = true) double weight) {
 		validateKeyResult(user, period, objective, title, estimate, confidence, weight);
+		validateScore(score);
 		Objective object = okrService.updateKeyResult(user, period, objective, id, title, score, estimate, confidence,
 				weight);
 		return new ResponseEntity<StandardRestResource>(new StandardEntityResource<Objective>(object), HttpStatus.OK);
