@@ -1,5 +1,6 @@
 package com.seblong.okr.controllers;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,8 +25,8 @@ public class APIOKRPeriodController {
 	private OKRPeriodService okrPeriodService;
 	
 	@GetMapping(value = "/get")
-	public ResponseEntity<StandardRestResource> get(int year) {
-
+	public ResponseEntity<StandardRestResource> get() {
+		int year = Calendar.getInstance().get(Calendar.YEAR);
 		List<OKRPeriod> okrPeriods = okrPeriodService.get(year);
 		if (okrPeriods == null) {
 			okrPeriods = Collections.emptyList();
