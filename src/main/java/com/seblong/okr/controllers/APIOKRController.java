@@ -126,7 +126,7 @@ public class APIOKRController {
 		return new ResponseEntity<StandardRestResource>(new StandardRestResource(200, "OK"), HttpStatus.OK);
 	}
 
-	@PostMapping(value = "/objective/update")
+	@PostMapping(value = "/objective/progress/update")
 	public ResponseEntity<StandardRestResource> updateProgress(@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
