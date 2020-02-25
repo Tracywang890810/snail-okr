@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import lombok.Data;
 
@@ -26,6 +28,7 @@ public class OKR implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	@JsonProperty(value = "unique")
+	@JsonSerialize(using = ToStringSerializer.class)
 	@Id
 	private ObjectId id;
 
@@ -69,6 +72,7 @@ public class OKR implements Serializable{
 		private static final long serialVersionUID = 1L;
 
 		@JsonProperty(value = "unique")
+		@JsonSerialize(using = ToStringSerializer.class)
 		private ObjectId id;
 
 		private String title;
@@ -125,6 +129,7 @@ public class OKR implements Serializable{
 		private static final long serialVersionUID = 1L;
 
 		@JsonProperty(value = "unique")
+		@JsonSerialize(using = ToStringSerializer.class)
 		private ObjectId id;
 
 		private String title;

@@ -23,6 +23,7 @@ import lombok.Data;
 public class OKRPeriod {
 
 	@JsonProperty(value = "unique")
+	@JsonSerialize(using = ToStringSerializer.class)
 	@Id
 	private ObjectId id;
 
