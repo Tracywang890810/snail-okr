@@ -1,6 +1,8 @@
 package com.seblong.okr.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -13,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Employee {
 
     @JsonProperty(value = "unique")
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
 

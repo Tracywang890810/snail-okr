@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.seblong.okr.enums.EntityStatus;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -11,28 +12,34 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.transaction.annotation.Transactional;
 
 @Data
-@Document(collection = "c_follow")
-public class Follow {
+@Document(collection = "c_comment")
+public class Comment {
 
     @JsonProperty(value = "unique")
     @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
 
-    /**
-     * 员工id
-     */
     @Indexed
+    private String period;
+
+    @Indexed
+    private String owner;
+
     private String employee;
 
-    /**
-     * 目标id
-     */
+    private String content;
+
+    @JsonIgnore
     @Indexed
-    private String target;
+    private Long created;
+
+    private String status;
+
+    @JsonIgnore
+    private Long updated;
 
     @Transient
     private String name;
@@ -43,13 +50,20 @@ public class Follow {
     @Transient
     private String thumb_avatar;
 
-    @JsonIgnore
-    private Long created;
+    public Comment() {
+        this.created = System.currentTimeMillis();
+        this.updated = System.currentTimeMillis();
+        this.status = EntityStatus.ACTIVED.toString();
+    }
 
     @PersistenceConstructor
-    public Follow(String employee, String target, Long created) {
+    public Comment(String period, String owner, String employee, String content, Long created, String status, Long updated) {
+        this.period = period;
+        this.owner = owner;
         this.employee = employee;
-        this.target = target;
+        this.content = content;
         this.created = created;
+        this.status = status;
+        this.updated = updated;
     }
 }
