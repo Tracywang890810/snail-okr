@@ -145,6 +145,13 @@ public class APIEmployeeController {
         List<Follow> follows = employeeService.getFollows(employeeId);
         if(follows == null){
             follows = Collections.emptyList();
+        }else {
+            follows.forEach(follow -> {
+                Employee employee = employeeService.findById(follow.getTarget());
+                follow.setAvatar(employee.getAvatar());
+                follow.setName(employee.getName());
+                follow.setThumb_avatar(employee.getThumb_avatar());
+            });
         }
         return new ResponseEntity<StandardRestResource>(new StandardListResource<Follow>(follows), HttpStatus.OK);
     }

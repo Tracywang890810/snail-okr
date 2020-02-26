@@ -78,7 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(follow != null){
             return;
         }
-        follow = new Follow(from.getId().toString(), target.getId().toString(), target.getName(), target.getAvatar(), target.getThumb_avatar(), System.currentTimeMillis());
+        follow = new Follow(from.getId().toString(), target.getId().toString(), System.currentTimeMillis());
         follow = followRepo.save(follow);
     }
 
