@@ -14,11 +14,15 @@ import com.seblong.okr.entities.OKR.KeyResult;
 import com.seblong.okr.entities.OKR.Objective;
 import com.seblong.okr.exceptions.ValidationException;
 import com.seblong.okr.repositories.OKRRepository;
+import com.seblong.okr.services.OKRHistoryService;
 import com.seblong.okr.services.OKRService;
 
 @Service
 public class OKRServiceImpl implements OKRService {
 
+	@Autowired
+	private OKRHistoryService okrHistoryService;
+	
 	@Autowired
 	private OKRRepository okrRepo;
 
@@ -56,6 +60,7 @@ public class OKRServiceImpl implements OKRService {
 		okr.addObjective(objective);
 		putOKR(okr);
 		okrRepo.save(okr);
+		okrHistoryService.create(okr);
 		return objective;
 	}
 
@@ -97,6 +102,7 @@ public class OKRServiceImpl implements OKRService {
 			okrRepo.save(okr);
 			putOKR(okr);
 			clearObjective(objective);
+			okrHistoryService.create(okr);
 			return objective;
 		}
 		return null;
@@ -110,6 +116,7 @@ public class OKRServiceImpl implements OKRService {
 				okr.getObjectives().remove(o);
 				clearOKR(okr, o);
 				okrRepo.save(okr);
+				okrHistoryService.create(okr);
 				break;
 			}
 		}
@@ -142,6 +149,7 @@ public class OKRServiceImpl implements OKRService {
 		okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
+		okrHistoryService.create(okr);
 		return object;
 	}
 
@@ -188,6 +196,7 @@ public class OKRServiceImpl implements OKRService {
 		okrRepo.save(okr);
 		putOKR(okr);
 		clearObjective(object);
+		okrHistoryService.create(okr);
 		return object;
 	}
 
@@ -214,6 +223,7 @@ public class OKRServiceImpl implements OKRService {
 				okrRepo.save(okr);
 				putOKR(okr);
 				clearObjective(object);
+				okrHistoryService.create(okr);
 				break;
 			}
 		}
@@ -239,6 +249,7 @@ public class OKRServiceImpl implements OKRService {
 		object.setUpdated(System.currentTimeMillis());
 		okrRepo.save(okr);
 		clearOKR(okr, object);
+		okrHistoryService.create(okr);
 	}
 
 	@Override
@@ -275,6 +286,7 @@ public class OKRServiceImpl implements OKRService {
 		okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
+		okrHistoryService.create(okr);
 		return object;
 	}
 

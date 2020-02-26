@@ -16,11 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.seblong.okr.entities.OKR.Objective;
+import com.seblong.okr.entities.OKRHistory;
+import com.seblong.okr.entities.OKRHistoryDate;
 import com.seblong.okr.entities.OKRPeriod;
 import com.seblong.okr.exceptions.ValidationException;
 import com.seblong.okr.resource.StandardEntityResource;
 import com.seblong.okr.resource.StandardListResource;
 import com.seblong.okr.resource.StandardRestResource;
+import com.seblong.okr.services.OKRHistoryDateService;
+import com.seblong.okr.services.OKRHistoryService;
 import com.seblong.okr.services.OKRPeriodService;
 import com.seblong.okr.services.OKRService;
 
@@ -33,6 +37,12 @@ public class APIOKRController {
 
 	@Autowired
 	private OKRPeriodService okrPeriodService;
+
+	@Autowired
+	private OKRHistoryService okrHistoryService;
+
+	@Autowired
+	private OKRHistoryDateService okrHistoryDateService;
 
 	@PostMapping(value = "/objective/add")
 	public ResponseEntity<StandardRestResource> addObjective(@RequestParam(value = "user", required = true) String user,
@@ -51,6 +61,8 @@ public class APIOKRController {
 	public ResponseEntity<StandardRestResource> listObjective(
 			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period) {
+		validateUser(user);
+		validatePeriod(period, 0);
 		List<Objective> objectives = okrService.listObjectives(user, period);
 		if (objectives == null) {
 			objectives = Collections.emptyList();
@@ -100,7 +112,8 @@ public class APIOKRController {
 	}
 
 	@PostMapping(value = "/keyresult/update")
-	public ResponseEntity<StandardRestResource> updateKeyResult(@RequestParam(value = "user", required = true) String user,
+	public ResponseEntity<StandardRestResource> updateKeyResult(
+			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id,
@@ -117,7 +130,8 @@ public class APIOKRController {
 	}
 
 	@PostMapping(value = "/keyresult/delete")
-	public ResponseEntity<StandardRestResource> deleteKeyResult(@RequestParam(value = "user", required = true) String user,
+	public ResponseEntity<StandardRestResource> deleteKeyResult(
+			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id) {
@@ -128,10 +142,11 @@ public class APIOKRController {
 	}
 
 	@PostMapping(value = "/objective/progress/update")
-	public ResponseEntity<StandardRestResource> updateProgress(@RequestParam(value = "user", required = true) String user,
+	public ResponseEntity<StandardRestResource> updateProgress(
+			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
-			@RequestParam(value = "progress", required = true)String progress) {
+			@RequestParam(value = "progress", required = true) String progress) {
 		validateUser(user);
 		validatePeriod(period, 0);
 		okrService.updateProgress(user, period, objective, progress);
@@ -139,7 +154,8 @@ public class APIOKRController {
 	}
 
 	@PostMapping(value = "/keyresult/score")
-	public ResponseEntity<StandardRestResource> scoreKeyResult(@RequestParam(value = "user", required = true) String user,
+	public ResponseEntity<StandardRestResource> scoreKeyResult(
+			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id,
@@ -149,6 +165,37 @@ public class APIOKRController {
 		validateScore(score);
 		Objective object = okrService.scoreKeyResult(user, period, objective, id, score);
 		return new ResponseEntity<StandardRestResource>(new StandardEntityResource<Objective>(object), HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/history/date")
+	public ResponseEntity<StandardRestResource> getHistoryDate(
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "period", required = true) String period) {
+
+		validateUser(user);
+		validatePeriod(period, 0);
+		OKRHistoryDate okrHistoryDate = okrHistoryDateService.get(user, period);
+		List<String> dates = null;
+		if (okrHistoryDate == null) {
+			dates = Collections.emptyList();
+		} else {
+			dates = okrHistoryDate.getDates();
+		}
+
+		return new ResponseEntity<StandardRestResource>(new StandardListResource<String>(dates), HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/history")
+	public ResponseEntity<StandardRestResource> getHistory(@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "period", required = true) String period,
+			@RequestParam(value = "date", required = true) String date) {
+		validateUser(user);
+		validatePeriod(period, 0);
+		OKRHistory okrHistory = okrHistoryService.get(user, period, date);
+		if( okrHistory != null ) {
+			return new ResponseEntity<StandardRestResource>(new StandardListResource<Objective>(okrHistory.getOkr().getObjectives()), HttpStatus.OK);
+		}
+		return new ResponseEntity<StandardRestResource>(new StandardRestResource(404, "history-not-exist"), HttpStatus.OK);		
 	}
 
 	private void validateObjective(String user, String period, String title, long estimate, double confidence)
