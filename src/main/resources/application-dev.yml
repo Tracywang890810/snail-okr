@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /snail-okr
 snail:
   okr:
     redis:
@@ -10,7 +13,7 @@ snail:
     mongodb:
       url: mongodb://root:seblong2015@182.254.245.148:27017/seblong?authSource=admin&maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
     wechat:
-      appid: 1000009
+      appid: ww8d0e994b898e7746
       secret: hGd_QdLN2vPcaU4OfrGete4cQQKIPWHlZQcEEHzEXP0
-      redirectUri: https://redirectUrl
+      redirectUri: https://api.snailsleep.net/OKRSaas2/index.html/home
       authUrl: https://open.weixin.qq.com/connect/oauth2/authorize

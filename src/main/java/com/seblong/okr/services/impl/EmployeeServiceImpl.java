@@ -97,6 +97,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return OAuth2Util.getOAuth2Url(authUrl, appId, redirectUri);
     }
 
+    @Override
+    public String getAccessToken() {
+        return OAuth2Util.getAccessToken(restTemplate, redisTemplate, appId, secret);
+    }
+
     private Employee getEmployeeByCode(String code){
         String accessToken = OAuth2Util.getAccessToken(restTemplate, redisTemplate, appId, secret);
         String employeeId = OAuth2Util.getUserId(restTemplate, redisTemplate, accessToken, code, appId, secret);
