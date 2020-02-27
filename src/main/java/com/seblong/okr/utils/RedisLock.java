@@ -59,6 +59,7 @@ public class RedisLock {
 				}
 			});
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("get redis error, key : {}", key);
 		}
 		return obj != null ? obj.toString() : null;
@@ -77,6 +78,7 @@ public class RedisLock {
 				}
 			});
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("setNX redis error, key : {}", key);
 		}
 		return obj != null ? (Boolean) obj : false;

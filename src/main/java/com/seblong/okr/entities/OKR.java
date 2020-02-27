@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 @Document(collection = "c_okrs")
-@CompoundIndex(name = "idx_user_period", def = "{ 'user' : 1, 'period' : 1 }" , unique = true)
+@CompoundIndex(name = "idx_user_period", def = "{ 'user' : 1, 'period' : 1 }")
 @Data
 public class OKR implements Serializable{
 	

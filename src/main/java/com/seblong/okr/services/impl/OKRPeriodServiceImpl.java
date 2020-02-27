@@ -15,7 +15,10 @@ import com.seblong.okr.entities.OKRPeriod;
 import com.seblong.okr.repositories.OKRPeriodRepository;
 import com.seblong.okr.services.OKRPeriodService;
 
+import lombok.extern.log4j.Log4j2;
+
 @Service
+@Log4j2
 public class OKRPeriodServiceImpl implements OKRPeriodService {
 
 	@Autowired
@@ -36,17 +39,18 @@ public class OKRPeriodServiceImpl implements OKRPeriodService {
 	
 	@Override
 	public OKRPeriod get(String id) {
-		
+		log.info("periodid: " + id);
 		if( ObjectId.isValid(id) ) {
 			OKRPeriod okrPeriod = OKR_PERIOD.get(id);
 			if( okrPeriod == null ) {
 				Optional<OKRPeriod> optional = okrPeriodRepo.findById(new ObjectId(id));
 				if( optional.isPresent() ) {
+					log.info("查询存在");
 					OKR_PERIOD.put(id, optional.get());
 					okrPeriod = optional.get();
 				}
-				return okrPeriod;
 			}
+			return okrPeriod;
 		}
 		return null;
 	}
