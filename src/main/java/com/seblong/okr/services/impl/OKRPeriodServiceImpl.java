@@ -39,13 +39,11 @@ public class OKRPeriodServiceImpl implements OKRPeriodService {
 	
 	@Override
 	public OKRPeriod get(String id) {
-		log.info("periodid: " + id);
 		if( ObjectId.isValid(id) ) {
 			OKRPeriod okrPeriod = OKR_PERIOD.get(id);
 			if( okrPeriod == null ) {
 				Optional<OKRPeriod> optional = okrPeriodRepo.findById(new ObjectId(id));
 				if( optional.isPresent() ) {
-					log.info("查询存在");
 					OKR_PERIOD.put(id, optional.get());
 					okrPeriod = optional.get();
 				}
