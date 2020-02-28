@@ -22,7 +22,7 @@ public class OKRServiceImpl implements OKRService {
 
 	@Autowired
 	private OKRHistoryService okrHistoryService;
-	
+
 	@Autowired
 	private OKRRepository okrRepo;
 
@@ -40,11 +40,11 @@ public class OKRServiceImpl implements OKRService {
 		}
 		return okr;
 	}
-	
+
 	@Override
 	public List<Objective> listObjectives(String user, String period) {
 		OKR okr = get(user, period);
-		if( okr != null ) {
+		if (okr != null) {
 			return okr.getObjectives();
 		}
 		return null;
@@ -58,8 +58,8 @@ public class OKRServiceImpl implements OKRService {
 		}
 		Objective objective = new Objective(title, estimate, confidence);
 		okr.addObjective(objective);
+		okr = okrRepo.save(okr);
 		putOKR(okr);
-		okrRepo.save(okr);
 		okrHistoryService.create(okr);
 		return objective;
 	}
@@ -99,7 +99,7 @@ public class OKRServiceImpl implements OKRService {
 			objective.setEstimate(estimate);
 			objective.setConfidence(confidence);
 			objective.setUpdated(System.currentTimeMillis());
-			okrRepo.save(okr);
+			okr = okrRepo.save(okr);
 			putOKR(okr);
 			clearObjective(objective);
 			okrHistoryService.create(okr);
@@ -111,11 +111,14 @@ public class OKRServiceImpl implements OKRService {
 	@Override
 	public void deleteObjective(String user, String period, String id) {
 		OKR okr = get(user, period);
+		if (okr == null) {
+			throw new ValidationException(404, "objective-not-exist");
+		}
 		for (Objective o : okr.getObjectives()) {
 			if (o.getId().toString().contentEquals(id)) {
 				okr.getObjectives().remove(o);
 				clearOKR(okr, o);
-				okrRepo.save(okr);
+				okr = okrRepo.save(okr);
 				okrHistoryService.create(okr);
 				break;
 			}
@@ -139,14 +142,14 @@ public class OKRServiceImpl implements OKRService {
 		if (object == null) {
 			throw new ValidationException(404, "objective-not-exist");
 		}
-		if( estimate > 0 && object.getEstimate()>0 && estimate > object.getEstimate() ) {
+		if (estimate > 0 && object.getEstimate() > 0 && estimate > object.getEstimate()) {
 			throw new ValidationException(400, "estimate-exceed");
 		}
 		object.setUpdated(System.currentTimeMillis());
 		object.addKeyResult(new KeyResult(title, estimate, confidence, weight));
 		validateWeight(object);
 		object.calculateScore();
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
 		okrHistoryService.create(okr);
@@ -180,8 +183,8 @@ public class OKRServiceImpl implements OKRService {
 		if (keyResult == null) {
 			throw new ValidationException(404, "keyresult-not-exist");
 		}
-		
-		if( estimate > 0 && object.getEstimate()>0 && estimate > object.getEstimate() ) {
+
+		if (estimate > 0 && object.getEstimate() > 0 && estimate > object.getEstimate()) {
 			throw new ValidationException(400, "estimate-exceed");
 		}
 		keyResult.setTitle(title);
@@ -193,7 +196,7 @@ public class OKRServiceImpl implements OKRService {
 		object.setUpdated(System.currentTimeMillis());
 		validateWeight(object);
 		object.calculateScore();
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		putOKR(okr);
 		clearObjective(object);
 		okrHistoryService.create(okr);
@@ -220,7 +223,7 @@ public class OKRServiceImpl implements OKRService {
 			if (kr.getId().toString().equals(id)) {
 				object.getKeyResults().remove(kr);
 				object.calculateScore();
-				okrRepo.save(okr);
+				okr = okrRepo.save(okr);
 				putOKR(okr);
 				clearObjective(object);
 				okrHistoryService.create(okr);
@@ -230,7 +233,8 @@ public class OKRServiceImpl implements OKRService {
 	}
 
 	@Override
-	public void updateProgress(String user, String period, String objective, String progress) throws ValidationException {
+	public void updateProgress(String user, String period, String objective, String progress)
+			throws ValidationException {
 		OKR okr = get(user, period);
 		if (okr == null) {
 			throw new ValidationException(404, "objective-not-exist");
@@ -247,7 +251,7 @@ public class OKRServiceImpl implements OKRService {
 		}
 		object.setProgress(progress);
 		object.setUpdated(System.currentTimeMillis());
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearOKR(okr, object);
 		okrHistoryService.create(okr);
 	}
@@ -283,7 +287,7 @@ public class OKRServiceImpl implements OKRService {
 		keyResult.setUpdated(System.currentTimeMillis());
 		object.calculateScore();
 		object.setUpdated(System.currentTimeMillis());
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
 		okrHistoryService.create(okr);

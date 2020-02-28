@@ -15,6 +15,7 @@ public class OKRHistoryDateServiceImpl implements OKRHistoryDateService {
 	@Autowired
 	private OKRHistoryDateRepository okrHistoryDateRepo;
 	
+	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
 	
 	@Override

@@ -56,8 +56,8 @@ public class OKRPeriod {
 			periods.add(new OKRPeriod(Type.QUARTER, year, rank, calculateStart(year, rank, Type.QUARTER),
 					calculateEnd(year, rank, Type.QUARTER)));
 		});
-		periods.add(new OKRPeriod(Type.YEAR, year, 0, calculateStart(year, 0, Type.QUARTER),
-				calculateEnd(year, 0, Type.QUARTER)));
+		periods.add(new OKRPeriod(Type.YEAR, year, 0, calculateStart(year, 0, Type.YEAR),
+				calculateEnd(year, 0, Type.YEAR)));
 		return periods;
 	}
 
