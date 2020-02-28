@@ -47,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<Comment> list(String employeeId, String period, String status) {
-        Sort sort = new Sort(Sort.Direction.DESC);
+        Sort sort = new Sort(Sort.Direction.ASC, "id");
         return commentRepo.findByPeriodAndEmployeeAndStatus(period, employeeId, status, sort);
     }
 

@@ -19,4 +19,6 @@ public interface EmployeeService {
     List<Follow> getFollows(String employeeId);
 
     String getAuth2Url();
+
+    String getAccessToken();
 }
