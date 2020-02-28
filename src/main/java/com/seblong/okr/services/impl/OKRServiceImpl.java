@@ -149,7 +149,7 @@ public class OKRServiceImpl implements OKRService {
 		object.addKeyResult(new KeyResult(title, estimate, confidence, weight));
 		validateWeight(object);
 		object.calculateScore();
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
 		okrHistoryService.create(okr);
@@ -196,7 +196,7 @@ public class OKRServiceImpl implements OKRService {
 		object.setUpdated(System.currentTimeMillis());
 		validateWeight(object);
 		object.calculateScore();
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		putOKR(okr);
 		clearObjective(object);
 		okrHistoryService.create(okr);
@@ -223,7 +223,7 @@ public class OKRServiceImpl implements OKRService {
 			if (kr.getId().toString().equals(id)) {
 				object.getKeyResults().remove(kr);
 				object.calculateScore();
-				okrRepo.save(okr);
+				okr = okrRepo.save(okr);
 				putOKR(okr);
 				clearObjective(object);
 				okrHistoryService.create(okr);
@@ -251,7 +251,7 @@ public class OKRServiceImpl implements OKRService {
 		}
 		object.setProgress(progress);
 		object.setUpdated(System.currentTimeMillis());
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearOKR(okr, object);
 		okrHistoryService.create(okr);
 	}
@@ -287,7 +287,7 @@ public class OKRServiceImpl implements OKRService {
 		keyResult.setUpdated(System.currentTimeMillis());
 		object.calculateScore();
 		object.setUpdated(System.currentTimeMillis());
-		okrRepo.save(okr);
+		okr = okrRepo.save(okr);
 		clearObjective(object);
 		putOKR(okr);
 		okrHistoryService.create(okr);
