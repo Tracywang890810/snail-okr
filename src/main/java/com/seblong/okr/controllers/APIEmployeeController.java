@@ -41,6 +41,20 @@ public class APIEmployeeController {
     }
 
     /**
+     * 获取accessToken
+     * @return
+     */
+    @GetMapping(value = "/accessToken")
+    public Map<String, Object> getAccessToken(){
+        Map<String, Object> rMap = new HashMap<>(4);
+        String accessToken = employeeService.getAccessToken();
+        rMap.put("accessToken", accessToken);
+        rMap.put("status", 200);
+        rMap.put("message", "OK");
+        return rMap;
+    }
+
+    /**
      * 根据code或者cookie获取员工信息，相当于登录
      * cookie为员工id
      *

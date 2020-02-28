@@ -19,7 +19,7 @@ public class OAuth2Util {
      * @return
      */
     public static String getOAuth2Url(String authUrl, String appId, String redirectUri){
-        String oauth2Url = authUrl + "?appid=" + appId + "&redirect_url=" + URLEncoder.encode(redirectUri) + "&response_type=code&scope=snsapi_base&state=login#wechat_redirect";
+        String oauth2Url = authUrl + "?appid=" + appId + "&redirect_uri=" + URLEncoder.encode(redirectUri) + "&response_type=code&scope=snsapi_base&state=login#wechat_redirect";
         return oauth2Url;
     }
 
