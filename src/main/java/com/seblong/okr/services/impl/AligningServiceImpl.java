@@ -43,5 +43,10 @@ public class AligningServiceImpl implements AligningService {
         return aligningRepo.findByTargetO(objectiveId);
     }
 
+    @Override
+    public Aligning getByObjective(String objectiveId) {
+        return aligningRepo.findByObjective(objectiveId);
+    }
+
 
 }

@@ -32,7 +32,6 @@ public class Comment {
 
     private String content;
 
-    @JsonIgnore
     @Indexed
     private Long created;
 

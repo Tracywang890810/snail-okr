@@ -47,6 +47,11 @@ public class APIAligningController {
             rMap.put("message", "targetE-not-exists");
             return rMap;
         }
+        if(aligningService.getTop(objectiveId) != null){
+            rMap.put("status", 405);
+            rMap.put("message", "objective-has-aligning");
+            return rMap;
+        }
         Aligning aligning = aligningService.align(employeeId, objectiveId, periodId, targetEId, targetOId);
         rMap.put("status", 200);
         rMap.put("message", "OK");
@@ -76,13 +81,15 @@ public class APIAligningController {
             @RequestParam(value = "objective") String objectiveId
     ){
         Map<String, Object> rMap = new HashMap<>(4);
-        Aligning aligningTop = aligningService.getTop(objectiveId);
-        OKR.Objective objectiveTop = okrService.getObjective(aligningTop.getTargetE(), aligningTop.getPeriod(), aligningTop.getTargetO());
         Map<String, Object> top = new HashMap<>();
-        if(objectiveTop != null){
-            top.put("objective", objectiveTop);
-            Employee employee = employeeService.findById(aligningTop.getTargetE());
-            top.put("employee", employee);
+        Aligning aligningTop = aligningService.getTop(objectiveId);
+        if(aligningTop != null){
+            OKR.Objective objectiveTop = okrService.getObjective(aligningTop.getTargetE(), aligningTop.getPeriod(), aligningTop.getTargetO());
+            if(objectiveTop != null){
+                top.put("objective", objectiveTop);
+                Employee employee = employeeService.findById(aligningTop.getTargetE());
+                top.put("employee", employee);
+            }
         }
         rMap.put("aligningTop", top);
         List<Aligning> aligningList = aligningService.getChildren(objectiveId);
@@ -94,6 +101,7 @@ public class APIAligningController {
                 map.put("employee", employee);
                 OKR.Objective objective = okrService.getObjective(aligning.getEmployee(), aligning.getPeriod(), aligning.getObjective());
                 map.put("objective", objective);
+                children.add(map);
             });
         }
         rMap.put("aligningChildren", children);

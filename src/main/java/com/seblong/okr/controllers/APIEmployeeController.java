@@ -66,6 +66,8 @@ public class APIEmployeeController {
     public ResponseEntity<StandardRestResource> getEmployee(
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "cookie", required = false) String cookie) {
+        System.out.println("code=" + code);
+        System.out.println("cookie=" + cookie);
         Employee employee = employeeService.getEmployee(code, cookie);
         if(employee == null){
             return new ResponseEntity<StandardRestResource>(new StandardRestResource(406, "oauth-error"), HttpStatus.OK);

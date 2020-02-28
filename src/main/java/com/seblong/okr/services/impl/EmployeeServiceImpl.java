@@ -31,7 +31,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private RestTemplate restTemplate;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Value("${snail.okr.wechat.appid}")
     private String appId;
@@ -50,13 +50,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(StringUtils.isEmpty(cookie)){
             return getEmployeeByCode(code);
         }else {
-            Object obj = redisTemplate.opsForValue().get(cookie);
+//            Object obj = redisTemplate.boundValueOps(cookie).get();
+            Employee obj = findById(cookie);
             if(obj == null){
                 return getEmployeeByCode(code);
             }else {
-                Employee employee = (Employee) redisTemplate.opsForValue().get(cookie);
-                redisTemplate.expire(cookie, 24, TimeUnit.HOURS);
-                return employee;
+//                Employee employee = (Employee) redisTemplate.boundValueOps(cookie).get();
+//                redisTemplate.expire(cookie, 24, TimeUnit.HOURS);
+                return obj;
             }
         }
     }
@@ -121,10 +122,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeO.setAvatar(employee.getAvatar());
                 employeeO.setAddress(employee.getAddress());
                 employeeO = employeeRepo.save(employeeO);
-                redisTemplate.opsForValue().set(employeeO.getId().toString(), employeeO, 24, TimeUnit.HOURS);
+//                redisTemplate.boundValueOps(employeeO.getId().toString()).set(employeeO, 24, TimeUnit.HOURS);
+                return employeeO;
             }else {
                 employee = employeeRepo.save(employee);
-                redisTemplate.opsForValue().set(employee.getId().toString(), employee, 24, TimeUnit.HOURS);
+//                redisTemplate.boundValueOps(employeeO.getId().toString()).set(employee, 24, TimeUnit.HOURS);
             }
         }
         return employee;

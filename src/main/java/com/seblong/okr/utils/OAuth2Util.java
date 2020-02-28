@@ -60,6 +60,7 @@ public class OAuth2Util {
         String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + accessToken + "&code=" + code;
         String response = HttpUtil.get(restTemplate, url, String.class);
         JSONObject resObj = new JSONObject(response);
+        System.out.println("code==" + code + "===result=" + resObj);
         int errCode = resObj.getInt("errcode");
         if(errCode == 0){
             if(resObj.has("UserId")) {
@@ -99,7 +100,7 @@ public class OAuth2Util {
             employee.setStatus(resObj.getInt("status"));
             employee.setTelephone(resObj.getString("telephone"));
             employee.setThumb_avatar(resObj.getString("thumb_avatar"));
-            employee.setUserId(resObj.getString("userId"));
+            employee.setUserId(resObj.getString("userid"));
             return employee;
         }else if(errCode == 40014){
             return getUserInfo(restTemplate, redisTemplate, getAccessToken(restTemplate, redisTemplate, appId, secret), userId, appId, secret);
