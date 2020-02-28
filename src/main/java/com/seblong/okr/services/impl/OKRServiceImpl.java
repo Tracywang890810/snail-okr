@@ -70,17 +70,16 @@ public class OKRServiceImpl implements OKRService {
 		if (objective == null) {
 			OKR okr = get(user, period);
 			for (Objective o : okr.getObjectives()) {
-				if (o.getId().toString().contentEquals(id)) {
+				if (o.getId().toString().equals(id)) {
 					objective = o;
 					break;
 				}
 			}
 			if (objective != null) {
 				putObjective(objective);
-				return objective;
 			}
 		}
-		return null;
+		return objective;
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class OKRServiceImpl implements OKRService {
 		OKR okr = get(user, period);
 		Objective objective = null;
 		for (Objective o : okr.getObjectives()) {
-			if (o.getId().toString().contentEquals(id)) {
+			if (o.getId().toString().equals(id)) {
 				objective = o;
 				break;
 			}
@@ -115,7 +114,7 @@ public class OKRServiceImpl implements OKRService {
 			throw new ValidationException(404, "objective-not-exist");
 		}
 		for (Objective o : okr.getObjectives()) {
-			if (o.getId().toString().contentEquals(id)) {
+			if (o.getId().toString().equals(id)) {
 				okr.getObjectives().remove(o);
 				clearOKR(okr, o);
 				okr = okrRepo.save(okr);
