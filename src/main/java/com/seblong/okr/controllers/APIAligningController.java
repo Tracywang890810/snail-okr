@@ -3,17 +3,18 @@ package com.seblong.okr.controllers;
 import com.seblong.okr.entities.Aligning;
 import com.seblong.okr.entities.Employee;
 import com.seblong.okr.entities.OKR;
+import com.seblong.okr.resource.StandardListResource;
+import com.seblong.okr.resource.StandardRestResource;
 import com.seblong.okr.services.AligningService;
 import com.seblong.okr.services.EmployeeService;
 import com.seblong.okr.services.OKRService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping(value = "/aligning", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -68,6 +69,29 @@ public class APIAligningController {
         rMap.put("status", 200);
         rMap.put("message", "OK");
         return rMap;
+    }
+
+    /**
+     * 我的关注
+     * @param employee
+     * @return
+     */
+    @GetMapping("/my/aligning")
+    public ResponseEntity<StandardRestResource> myAligning(
+            @RequestParam(value = "employee") String employee){
+        Map<String, Object> rMap = new HashMap<>();
+        List<Aligning> aligningList = aligningService.getByEmployee(employee);
+        if(aligningList == null){
+            aligningList = Collections.emptyList();
+        }
+        List<Employee> employeeList = new ArrayList<>();
+        aligningList.forEach(aligning -> {
+            Employee target = employeeService.findById(aligning.getTargetE());
+            if(!employeeList.contains(target)){
+                employeeList.add(target);
+            }
+        });
+        return new ResponseEntity<StandardRestResource>(new StandardListResource<Employee>(employeeList), HttpStatus.OK);
     }
 
     /**

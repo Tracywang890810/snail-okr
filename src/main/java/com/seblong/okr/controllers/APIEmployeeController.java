@@ -135,6 +135,26 @@ public class APIEmployeeController {
     }
 
     /**
+     * 判断是否已关注
+     * @param employeeId
+     * @param target
+     * @return
+     */
+    @GetMapping("/isfollow")
+    public Map<String, Object> isFollow(
+            @RequestParam(value = "employee") String employeeId,
+            @RequestParam(value = "target") String target
+    ){
+        Map<String, Object> rMap = new HashMap<>(4);
+        Follow follow = employeeService.getFollow(employeeId, target);
+        rMap.put("status", 200);
+        rMap.put("message", "OK");
+        rMap.put("follow", follow != null);
+        rMap.put("unique", follow == null ? null : follow.getId().toString());
+        return rMap;
+    }
+
+    /**
      * 取消关注
      * @param unique
      * @return

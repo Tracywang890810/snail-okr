@@ -70,7 +70,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee findById(String unique) {
         Optional<Employee> optional = employeeRepo.findById(new ObjectId(unique));
-        return optional == null ? null : optional.get();
+        return optional.orElse(null) == null ? null : optional.get();
     }
 
     @Override
@@ -101,6 +101,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public String getAccessToken() {
         return OAuth2Util.getAccessToken(restTemplate, redisTemplate, appId, secret);
+    }
+
+    @Override
+    public Follow getFollow(String employeeId, String target) {
+        return followRepo.findByEmployeeAndTarget(employeeId, target);
     }
 
     private Employee getEmployeeByCode(String code){
