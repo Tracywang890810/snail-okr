@@ -66,6 +66,8 @@ public class APIEmployeeController {
     public ResponseEntity<StandardRestResource> getEmployee(
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "cookie", required = false) String cookie) {
+        System.out.println("code=" + code);
+        System.out.println("cookie=" + cookie);
         Employee employee = employeeService.getEmployee(code, cookie);
         if(employee == null){
             return new ResponseEntity<StandardRestResource>(new StandardRestResource(406, "oauth-error"), HttpStatus.OK);
@@ -129,6 +131,26 @@ public class APIEmployeeController {
         employeeService.follow(from, target);
         rMap.put("status", 200);
         rMap.put("message", "OK");
+        return rMap;
+    }
+
+    /**
+     * 判断是否已关注
+     * @param employeeId
+     * @param target
+     * @return
+     */
+    @GetMapping("/isfollow")
+    public Map<String, Object> isFollow(
+            @RequestParam(value = "employee") String employeeId,
+            @RequestParam(value = "target") String target
+    ){
+        Map<String, Object> rMap = new HashMap<>(4);
+        Follow follow = employeeService.getFollow(employeeId, target);
+        rMap.put("status", 200);
+        rMap.put("message", "OK");
+        rMap.put("follow", follow != null);
+        rMap.put("unique", follow == null ? null : follow.getId().toString());
         return rMap;
     }
 

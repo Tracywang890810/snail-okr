@@ -12,4 +12,8 @@ public interface AligningService {
     Aligning getTop(String objectiveId);
 
     List<Aligning> getChildren(String objectiveId);
+
+    Aligning getByObjective(String objectiveId);
+
+    List<Aligning> getByEmployee(String employee);
 }

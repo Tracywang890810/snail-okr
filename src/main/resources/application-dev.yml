@@ -15,5 +15,5 @@ snail:
     wechat:
       appid: ww8d0e994b898e7746
       secret: hGd_QdLN2vPcaU4OfrGete4cQQKIPWHlZQcEEHzEXP0
-      redirectUri: https://api.snailsleep.net/OKRSaas2/index.html/home
+      redirectUri: https://api.snailsleep.net/OKRSaas/login
       authUrl: https://open.weixin.qq.com/connect/oauth2/authorize

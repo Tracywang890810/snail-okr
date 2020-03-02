@@ -21,4 +21,6 @@ public interface EmployeeService {
     String getAuth2Url();
 
     String getAccessToken();
+
+    Follow getFollow(String employeeId, String target);
 }
