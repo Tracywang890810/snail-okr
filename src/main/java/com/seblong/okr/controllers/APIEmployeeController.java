@@ -7,6 +7,8 @@ import com.seblong.okr.resource.StandardListResource;
 import com.seblong.okr.resource.StandardRestResource;
 import com.seblong.okr.services.EmployeeService;
 import com.seblong.okr.utils.OAuth2Util;
+import io.swagger.annotations.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Api(tags = "用户的相关接口")
 @RestController
 @RequestMapping(value = "/employee", produces = {MediaType.APPLICATION_JSON_VALUE})
 public class APIEmployeeController {
@@ -30,6 +33,7 @@ public class APIEmployeeController {
      *
      * @return
      */
+    @ApiOperation(value = "获取企业微信用户授权链接")
     @GetMapping(value = "/oauth")
     public Map<String, Object> getOAuth2Url() {
         Map<String, Object> rMap = new HashMap<>(4);
@@ -62,6 +66,15 @@ public class APIEmployeeController {
      * @param cookie
      * @return
      */
+    @ApiOperation(value = "用户登录接口")
+    @ApiImplicitParams(
+            value = {@ApiImplicitParam(name = "code", value = "企业微信返回的code", required = false, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "cookie", value = "本地缓存的用户id", required = false, dataType = "String", paramType = "query")}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 406, message = "oauth-error"),
+            @ApiResponse(code = 200, message = "OK", response = Employee.class, responseContainer = "用户属性")
+    })
     @PostMapping(value = "/login")
     public ResponseEntity<StandardRestResource> getEmployee(
             @RequestParam(value = "code", required = false) String code,
@@ -128,9 +141,10 @@ public class APIEmployeeController {
             rMap.put("message", "target-error");
             return rMap;
         }
-        employeeService.follow(from, target);
+        Follow follow = employeeService.follow(from, target);
         rMap.put("status", 200);
         rMap.put("message", "OK");
+        rMap.put("unique", follow.getId().toString());
         return rMap;
     }
 

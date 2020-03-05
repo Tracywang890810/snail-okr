@@ -12,7 +12,7 @@ public interface EmployeeService {
 
     Employee findById(String fromId);
 
-    void follow(Employee from, Employee target);
+    Follow follow(Employee from, Employee target);
 
     void unFollow(String unique);
 
