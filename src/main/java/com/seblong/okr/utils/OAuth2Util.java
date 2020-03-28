@@ -66,12 +66,12 @@ public class OAuth2Util {
             if(resObj.has("UserId")) {
                 return resObj.getString("UserId");
             }else {
-                throw new RuntimeException(String.format("user not in group, OpenId : %d", resObj.getString("OpenId")));
+                throw new RuntimeException(String.format("user not in group, OpenId : %s", resObj.getString("OpenId")));
             }
         }else if(errCode == 40014){
             return getUserId(restTemplate, redisTemplate, getAccessToken(restTemplate, redisTemplate, appId, secret), code, appId, secret);
         }else {
-            throw new RuntimeException(String.format("get wechat userId error, errorCode : %d, errMsg : %d", errCode, resObj.getString("errmsg")));
+            throw new RuntimeException(String.format("get wechat userId error, errorCode : %d, errMsg : %s", errCode, resObj.getString("errmsg")));
         }
     }
 
@@ -89,7 +89,7 @@ public class OAuth2Util {
         int errCode = resObj.getInt("errcode");
         if(errCode == 0){
             Employee employee = new Employee();
-            employee.setAddress(resObj.getString("address"));
+            employee.setAddress(resObj.has("address") ? resObj.get("address")+"" : null);
             employee.setAvatar(resObj.getString("avatar"));
             employee.setEmail(resObj.getString("email"));
             employee.setEnable(resObj.getInt("enable"));
