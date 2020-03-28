@@ -3,6 +3,7 @@ package com.seblong.okr.entities;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,6 +24,7 @@ public class OKRHistory {
 	
 	private String period;
 	
+	@Reference
 	private OKR okr;
 	
 	private long created;

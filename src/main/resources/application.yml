@@ -8,9 +8,9 @@ snail:
 spring:
   profiles:
     active:
-      - dev
+      - prod
   application:
-    name: coin
+    name: wish
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
