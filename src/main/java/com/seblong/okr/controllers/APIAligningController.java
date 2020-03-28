@@ -72,7 +72,7 @@ public class APIAligningController {
     }
 
     /**
-     * 我的关注
+     * 我的对齐
      * @param employee
      * @return
      */
@@ -113,6 +113,8 @@ public class APIAligningController {
                 top.put("objective", objectiveTop);
                 Employee employee = employeeService.findById(aligningTop.getTargetE());
                 top.put("employee", employee);
+            }else {
+                aligningService.remove(aligningTop.getId().toString());
             }
         }
         rMap.put("aligningTop", top);
@@ -122,10 +124,14 @@ public class APIAligningController {
             aligningList.forEach(aligning -> {
                 Map<String, Object> map = new HashMap<>();
                 Employee employee = employeeService.findById(aligning.getEmployee());
-                map.put("employee", employee);
                 OKR.Objective objective = okrService.getObjective(aligning.getEmployee(), aligning.getPeriod(), aligning.getObjective());
-                map.put("objective", objective);
-                children.add(map);
+                if(objective == null){
+                    aligningService.remove(aligning.getId().toString());
+                }else {
+                    map.put("employee", employee);
+                    map.put("objective", objective);
+                    children.add(map);
+                }
             });
         }
         rMap.put("aligningChildren", children);
@@ -150,9 +156,14 @@ public class APIAligningController {
             aligningList.forEach(aligning -> {
                 Map<String, Object> map = new HashMap<>();
                 Employee employee = employeeService.findById(aligning.getEmployee());
-                map.put("employee", employee);
                 OKR.Objective objective = okrService.getObjective(aligning.getEmployee(), aligning.getPeriod(), aligning.getObjective());
-                map.put("objective", objective);
+                if(objective == null){
+                    aligningService.remove(aligning.getId().toString());
+                }else {
+                    map.put("employee", employee);
+                    map.put("objective", objective);
+                    children.add(map);
+                }
             });
         }
         rMap.put("aligningChildren", children);

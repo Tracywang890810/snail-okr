@@ -74,13 +74,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void follow(Employee from, Employee target) {
+    public Follow follow(Employee from, Employee target) {
         Follow follow = followRepo.findByEmployeeAndTarget(from.getId().toString(), target.getId().toString());
         if(follow != null){
-            return;
+            return follow;
         }
         follow = new Follow(from.getId().toString(), target.getId().toString(), System.currentTimeMillis());
         follow = followRepo.save(follow);
+        return follow;
     }
 
     @Override
