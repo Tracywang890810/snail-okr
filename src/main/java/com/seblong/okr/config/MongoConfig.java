@@ -18,5 +18,4 @@ public class MongoConfig extends AbstractMongoProperties{
 	public MongoTemplate getMongoTemplate() {
 		return new MongoTemplate(mongoDbFactory());
 	}
-
 }

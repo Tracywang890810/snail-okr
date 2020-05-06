@@ -38,7 +38,7 @@ import com.seblong.okr.utils.SnowflakeIdWorker;
 @EnableAsync
 @ComponentScan(basePackages = { "com.seblong.okr.services" })
 public class ServiceConfig extends BaseServiceConfig{
-
+	
 	@Bean(destroyMethod = "shutdown")
 	public ThreadPoolTaskExecutor executor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

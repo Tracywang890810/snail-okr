@@ -2,8 +2,6 @@ package com.seblong.okr.resource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 @JsonInclude(Include.NON_EMPTY)
 public class StandardEntityResource<T> extends StandardRestResource {

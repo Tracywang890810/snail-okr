@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import lombok.Data;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -15,8 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-
-import lombok.Data;
 
 @Data
 @Document(collection = "c_okr_periods")

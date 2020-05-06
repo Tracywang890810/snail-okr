@@ -1,6 +1,6 @@
 logging:
   level:
-    root: INFO
+    root: DEBUG
 snail:
   okr:
     datacenterId: 0
@@ -8,7 +8,7 @@ snail:
 spring:
   profiles:
     active:
-      - prod
+      - dev
   application:
     name: wish
   autoconfigure:

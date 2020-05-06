@@ -1,15 +1,15 @@
 package com.seblong.okr.utils;
 
-import com.seblong.okr.entities.Employee;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.client.RestTemplate;
-
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.json.JSONObject;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.client.RestTemplate;
+
+import com.seblong.okr.entities.Employee;
 
 public class OAuth2Util {
 
@@ -19,7 +19,8 @@ public class OAuth2Util {
      * @return
      */
     public static String getOAuth2Url(String authUrl, String appId, String redirectUri){
-        String oauth2Url = authUrl + "?appid=" + appId + "&redirect_uri=" + URLEncoder.encode(redirectUri) + "&response_type=code&scope=snsapi_base&state=login#wechat_redirect";
+        @SuppressWarnings("deprecation")
+		String oauth2Url = authUrl + "?appid=" + appId + "&redirect_uri=" + URLEncoder.encode(redirectUri) + "&response_type=code&scope=snsapi_base&state=login#wechat_redirect";
         return oauth2Url;
     }
 
@@ -28,7 +29,8 @@ public class OAuth2Util {
      * @param restTemplate
      * @return
      */
-    public static String getAccessToken(RestTemplate restTemplate, RedisTemplate redisTemplate, String appId, String secret){
+    @SuppressWarnings({ "rawtypes", "unchecked", "unused" })
+	public static String getAccessToken(RestTemplate restTemplate, RedisTemplate redisTemplate, String appId, String secret){
         String accessToken = null;
         Object value = redisTemplate.opsForValue().get(appId);
         if(value != null){
@@ -56,6 +58,7 @@ public class OAuth2Util {
      * @param code
      * @return
      */
+    @SuppressWarnings({ "rawtypes" })
     public static String getUserId(RestTemplate restTemplate, RedisTemplate redisTemplate, String accessToken, String code, String appId, String secret){
         String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + accessToken + "&code=" + code;
         String response = HttpUtil.get(restTemplate, url, String.class);
@@ -82,6 +85,7 @@ public class OAuth2Util {
      * @param userId
      * @return
      */
+    @SuppressWarnings({ "rawtypes" })
     public static Employee getUserInfo(RestTemplate restTemplate, RedisTemplate redisTemplate, String accessToken, String userId, String appId, String secret){
         String url = "https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=" + accessToken + "&userid=" + userId;
         String response = HttpUtil.get(restTemplate, url, String.class);

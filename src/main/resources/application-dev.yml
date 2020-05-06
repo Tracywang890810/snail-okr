@@ -4,14 +4,14 @@ server:
 snail:
   okr:
     redis:
-      host: 182.254.245.148
+      host: 127.0.0.1
       port: 6379
       password: seblong
       maxTotal: 32
       maxIdle: 8
       testOnIdle: true
     mongodb:
-      url: mongodb://root:seblong2015@182.254.245.148:27017/seblong?authSource=admin&maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+      url: mongodb://root:seblong2015@127.0.0.1:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
     wechat:
       appid: ww8d0e994b898e7746
       secret: hGd_QdLN2vPcaU4OfrGete4cQQKIPWHlZQcEEHzEXP0
