@@ -2,6 +2,7 @@ package com.seblong.okr.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
@@ -15,6 +16,8 @@ public class LRUCache<V> extends LinkedHashMap<String, V> {
 	private final int MAX_SIZE;
 
 	private RedisTemplate<String, Object> redisTemplate;
+	
+	private int seconds = 3600;
 
 	public LRUCache(int size) {
 		super((int) Math.ceil(size / 0.75) + 1, 0.75f, true);
@@ -67,7 +70,7 @@ public class LRUCache<V> extends LinkedHashMap<String, V> {
 		key = generateKey(key);
 		V v = super.put(key, value);
 		if (this.redisTemplate != null)
-			redisTemplate.boundValueOps(key).set(value);
+			redisTemplate.boundValueOps(key).set(value, seconds, TimeUnit.SECONDS);
 		return v;
 	}
 
