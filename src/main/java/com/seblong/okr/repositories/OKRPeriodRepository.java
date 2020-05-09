@@ -7,11 +7,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.seblong.okr.entities.OKRPeriod;
+import com.seblong.okr.entities.OKRPeriod.Type;
 
 @Repository
 public interface OKRPeriodRepository extends MongoRepository<OKRPeriod, ObjectId>{
 
-	List<OKRPeriod> findByYear(int year);
+	List<OKRPeriod> findByEnterpriseIdAndYear( String enterpriseId, String year );
 	
-	long countByYear(int year);
+	long countByEnterpriseIdAndTypeAndStartDate( String enterpriseId, Type type, String startDate );
 }
