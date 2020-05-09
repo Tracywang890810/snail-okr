@@ -18,10 +18,10 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 @Document(collection = "c_okrs")
-@CompoundIndex(name = "idx_user_period", def = "{ 'user' : 1, 'period' : 1 }" , unique = true)
+@CompoundIndex(name = "idx_user_period", def = "{ 'user' : 1, 'period' : 1 }", unique = true)
 @Data
-public class OKR implements Serializable{
-	
+public class OKR implements Serializable {
+
 	/**
 	 * 
 	 */
@@ -41,7 +41,7 @@ public class OKR implements Serializable{
 	private long created;
 
 	private long updated;
-	
+
 	@PersistenceConstructor
 	public OKR(String user, String period, List<Objective> objectives, long created, long updated) {
 		this.user = user;
@@ -58,13 +58,52 @@ public class OKR implements Serializable{
 		this.updated = created;
 		this.objectives = new ArrayList<OKR.Objective>();
 	}
+
+	public boolean rank(int oldRank, int newRank) {
+		if( objectives.size() > 0 ){
+			int maxIndex = this.objectives.size() - 1;
+			if( oldRank <= maxIndex && newRank <= maxIndex ) {
+				this.objectives.add(newRank, this.objectives.remove(oldRank));
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public void addObjective(Objective objective) {
 		this.objectives.add(objective);
 	}
 
+	public Objective findObjective(ObjectId objectiveId) {
+		if (objectives.size() > 0) {
+			for (int i = 0; i < objectives.size(); i++) {
+				if (objectives.get(i).getId().equals(objectiveId)) {
+					return objectives.get(i);
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Objective findAndRemoveOBjective(ObjectId objectiveId) {
+		if (objectives.size() > 0) {
+			int i = 0;
+			boolean find = false;
+			for (; i < objectives.size(); i++) {
+				if (objectives.get(i).getId().equals(objectiveId)) {
+					find = true;
+					break;
+				}
+
+			}
+			if (find)
+				return objectives.remove(i);
+		}
+		return null;
+	}
+
 	@Data
-	public static class Objective implements Serializable{
+	public static class Objective implements Serializable {
 
 		/**
 		 * 
@@ -90,6 +129,10 @@ public class OKR implements Serializable{
 		private long created;
 
 		private long updated;
+		
+		public Objective(String title) {
+			this(title, -1, -1);
+		}
 
 		public Objective(String title, long estimate, double confidence) {
 			this.id = new ObjectId();
@@ -104,25 +147,82 @@ public class OKR implements Serializable{
 
 		public Objective() {
 		}
-		
+
 		public void addKeyResult(KeyResult keyResult) {
 			this.keyResults.add(keyResult);
+			this.updated = System.currentTimeMillis();
+		}
+
+		public int getKeyResultSize() {
+			return this.keyResults.size();
+		}
+
+		public boolean rank(int oldRank, int newRank) {
+			if( this.keyResults.size() > 0 ) {
+				int maxIndex = this.keyResults.size() - 1;
+				if( oldRank <= maxIndex && newRank <= maxIndex ) {
+					this.keyResults.add(newRank, this.keyResults.get(oldRank));
+					this.updated = System.currentTimeMillis();
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public KeyResult findKeyResult(ObjectId keyresultId) {
+
+			if (keyResults.size() > 0) {
+				for (int i = 0; i < keyResults.size(); i++) {
+					if (keyResults.get(i).getId().equals(keyresultId)) {
+						return keyResults.get(i);
+					}
+				}
+			}
+			return null;
+
+		}
+
+		public KeyResult findAndRemoveKeyResult(ObjectId keyresultId) {
+			if (keyResults.size() > 0) {
+				int i = 0;
+				boolean find = false;
+				for (; i < keyResults.size(); i++) {
+					if (keyResults.get(i).getId().equals(keyresultId)) {
+						find = true;
+						break;
+					}
+
+				}
+				if (find)
+					return keyResults.remove(i);
+			}
+			return null;
+		}
+
+		public KeyResult scoreKeyResult(ObjectId keyresultId, double socre){
+			KeyResult keyResult = findKeyResult(keyresultId);
+			if( keyResult != null ){
+				keyResult.setScore(socre);
+				this.updated = System.currentTimeMillis();
+				calculateScore();
+			}
+			return keyResult;
 		}
 		
-		public void calculateScore() {
-			if( !CollectionUtils.isEmpty(keyResults) ) {
+		private void calculateScore() {
+			if (!CollectionUtils.isEmpty(keyResults)) {
 				this.score = 0;
-				for( KeyResult keyResult : keyResults ) {
+				for (KeyResult keyResult : keyResults) {
 					this.score += keyResult.getScore() * keyResult.getWeight();
 				}
 			}
 		}
-		
+
 	}
 
 	@Data
-	public static class KeyResult implements Serializable{
-		
+	public static class KeyResult implements Serializable {
+
 		/**
 		 * 
 		 */
@@ -134,32 +234,38 @@ public class OKR implements Serializable{
 
 		private String title;
 
+		private double progress;
+
 		private double score;
 
 		private long estimate;
 
 		private double confidence;
-		
+
 		private double weight;
-		
+
 		private long created;
 
 		private long updated;
 
-		public KeyResult(String title, long estimate, double confidence, double weight) {
+		public KeyResult(String title, long estimate, double confidence, double weight, double progress) {
 			this.id = new ObjectId();
 			this.title = title;
 			this.estimate = estimate;
 			this.confidence = confidence;
 			this.weight = weight;
+			this.progress = progress;
 			this.created = System.currentTimeMillis();
 			this.updated = created;
 		}
 
-		public KeyResult() {
+		public KeyResult(String title) {
+			this(title, -1, -1, -1, 0);
 		}
 		
-		
+		public KeyResult() {
+		}
+
 	}
 
 }
