@@ -66,9 +66,8 @@ public class LRUCache<V> extends LinkedHashMap<String, V> {
 	public V put(String key, V value) {
 		key = generateKey(key);
 		V v = super.put(key, value);
-		if (v == null) {
+		if (this.redisTemplate != null)
 			redisTemplate.boundValueOps(key).set(value);
-		}
 		return v;
 	}
 
