@@ -4,18 +4,36 @@ server:
 snail:
   okr:
     redis:
-      host: 127.0.0.1
+      host: 182.254.245.148
       port: 6379
       password: seblong
       maxTotal: 32
       maxIdle: 8
       testOnIdle: true
     mongodb:
-      url: mongodb://root:seblong2015@127.0.0.1:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+      url: mongodb://root:seblong2015@182.254.245.148:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
     wechat:
-      appid: ww8d0e994b898e7746
-      secret: hGd_QdLN2vPcaU4OfrGete4cQQKIPWHlZQcEEHzEXP0
-      redirectUri: https://api.snailsleep.net/OKRSaasA/index
-      authUrl: https://open.weixin.qq.com/connect/oauth2/authorize
+      suite_id: ww7f415908d88a68f6
+      suite_secret: 9AdcW5sd1h_3fV8oNesASe_cMh8Gsft1qxHhyVHWXvU
+      suite_token: 3Ad8eryw6j
+      suite_encodingAesKey: 8XTWWruKyy4J9Dh6WRlOLvzbb5yBq7eWmdOyz9M2cAy
+      corpId: ww8d0e994b898e7746
+      provider_secret: th2myfkdXrRy97ZFyEM__t33Y77HKxebFofHqsR8RFrutL6t050EXC4ccmm7kT_1
+      url:
+        #获取服务商凭证URL
+        providerToken: https://qyapi.weixin.qq.com/cgi-bin/service/get_provider_token
+        #获取第三方应用凭证URL
+        suite_token: https://qyapi.weixin.qq.com/cgi-bin/service/get_suite_token
+        #获取企业永久授权码URL
+        permanent_code: https://qyapi.weixin.qq.com/cgi-bin/service/get_permanent_code
+        #获取企业授权信息URL
+        auth_info: https://qyapi.weixin.qq.com/cgi-bin/service/get_auth_info
+        #获取企业凭证URL
+        corp_token: https://qyapi.weixin.qq.com/cgi-bin/service/get_corp_token
+        #发送消息URL
+        send_message: https://qyapi.weixin.qq.com/cgi-bin/message/send
 swagger:
   enabled: true
+logging:
+  file: logs/okr.log
+  level: info
