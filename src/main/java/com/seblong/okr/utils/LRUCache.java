@@ -2,6 +2,7 @@ package com.seblong.okr.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
@@ -12,25 +13,50 @@ public class LRUCache<V> extends LinkedHashMap<String, V> {
 
 	protected final String KEY_PREFIX;
 
-	private final int MAX_SIZE;
-
 	private RedisTemplate<String, Object> redisTemplate;
+	
+	private int size = 100;
+	
+	private int seconds = 3600;
 
-	public LRUCache(int size) {
-		super((int) Math.ceil(size / 0.75) + 1, 0.75f, true);
-		this.MAX_SIZE = size;
+	public LRUCache() {
 		this.KEY_PREFIX = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]
 				.getTypeName();
 	}
 
+	public LRUCache(int size) {
+		this();
+		this.size = size;
+	}
+
+	public LRUCache(int size, int seconds) {
+		this();
+		this.size = size;
+		this.seconds = seconds;
+	}
+
 	public LRUCache(int size, RedisTemplate<String, Object> redisTemplate) {
-		this(size);
+		this();
+		this.size = size;
+		this.redisTemplate = redisTemplate;
+	}
+	
+	public LRUCache(RedisTemplate<String, Object> redisTemplate) {
+		this();
 		this.redisTemplate = redisTemplate;
 	}
 
+	public LRUCache(int size, int seconds,RedisTemplate<String, Object> redisTemplate) {
+		this();
+		this.redisTemplate = redisTemplate;
+		this.size = size;
+		this.seconds = seconds;
+	}
+	
+
 	@Override
 	protected boolean removeEldestEntry(java.util.Map.Entry<String, V> eldest) {
-		return size() > MAX_SIZE;
+		return size() > size;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -66,9 +92,8 @@ public class LRUCache<V> extends LinkedHashMap<String, V> {
 	public V put(String key, V value) {
 		key = generateKey(key);
 		V v = super.put(key, value);
-		if (v == null) {
-			redisTemplate.boundValueOps(key).set(value);
-		}
+		if (this.redisTemplate != null)
+			redisTemplate.boundValueOps(key).set(value, seconds, TimeUnit.SECONDS);
 		return v;
 	}
 

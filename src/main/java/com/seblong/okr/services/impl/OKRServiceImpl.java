@@ -24,16 +24,14 @@ public class OKRServiceImpl implements OKRService {
 	private OKRRepository okrRepo;
 
 	@Autowired
-	private RedisTemplate<String, Object> redisTemplate;
-	
-	@Autowired
 	private OKRHistoryService okrHistoryService;
 
 	private final OKRCache CACHE_OKR;
 
 	private final ObjectiveCache CACHE_OBJECTIVE;
 
-	public OKRServiceImpl() {
+	@Autowired
+	public OKRServiceImpl(RedisTemplate<String, Object> redisTemplate) {
 		CACHE_OKR = new OKRCache(100, redisTemplate);
 		CACHE_OBJECTIVE = new ObjectiveCache(100, redisTemplate);
 	}
