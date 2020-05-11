@@ -68,6 +68,21 @@ public class APIOKRController {
 		}
 		return new ResponseEntity<>(new StandardListResource<>(objectives), HttpStatus.OK);
 	}
+	
+	@GetMapping(value = "/objective/get")
+	public ResponseEntity<StandardRestResource> getObjective(
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "period", required = true) String period,
+			@RequestParam(value = "id", required = true) String id) {
+		validateUser(user);
+		validatePeriod(period);
+		validateObjective(id);
+		Objective objective = okrService.getObjective(user, period, id);
+		if (objective == null) {
+			throw new ValidationException(1404, "objective-not-exist");
+		}
+		return new ResponseEntity<>(new StandardEntityResource<>(objective), HttpStatus.OK);
+	}
 
 	@PostMapping(value = "/objective/update")
 	public  ResponseEntity<StandardEntityResource<Objective>> updateObjective(

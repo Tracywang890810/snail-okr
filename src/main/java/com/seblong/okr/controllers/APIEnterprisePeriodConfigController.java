@@ -54,6 +54,9 @@ public class APIEnterprisePeriodConfigController {
 	public ResponseEntity<StandardEntityResource<EnterprisePeriodConfig>> get(
 			@RequestParam(value = "enterpriseId") String enterpriseId) {
 		EnterprisePeriodConfig config = enterprisePeriodConfigService.get(enterpriseId);
+		if( config == null ) {
+			throw new ValidationException(1404, "config-not-exist");
+		}
 		return new ResponseEntity<StandardEntityResource<EnterprisePeriodConfig>>(
 				new StandardEntityResource<EnterprisePeriodConfig>(config), HttpStatus.OK);
 	}
