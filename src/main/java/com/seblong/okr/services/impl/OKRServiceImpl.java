@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.seblong.okr.entities.OKR;
 import com.seblong.okr.entities.OKR.KeyResult;
@@ -169,6 +170,7 @@ public class OKRServiceImpl implements OKRService {
 					keyResult.setEstimate(estimate);
 					keyResult.setConfidence(confidence);
 					keyResult.setWeight(weight);
+					validateWeight(objective);
 					keyResult.setProgress(progress);
 					keyResult.setUpdated(System.currentTimeMillis());
 					objective.setUpdated(System.currentTimeMillis());
@@ -249,6 +251,20 @@ public class OKRServiceImpl implements OKRService {
 			}
 		}
 		return okr;
+	}
+
+	private void validateWeight(Objective objective) {
+
+		if (!CollectionUtils.isEmpty(objective.getKeyResults())) {
+			double total = 0;
+			for (KeyResult keyResult : objective.getKeyResults()) {
+				total += keyResult.getWeight();
+			}
+			if (total > 1) {
+				throw new ValidationException(400, "weight-exceed");
+			}
+		}
+
 	}
 
 }

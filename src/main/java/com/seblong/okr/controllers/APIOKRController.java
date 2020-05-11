@@ -169,7 +169,7 @@ public class APIOKRController {
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id,
 			@RequestParam(value = "title", required = true) String title,
-			@RequestParam(value = "progress", required = true) int progress,
+			@RequestParam(value = "progress", required = true) double progress,
 			@RequestParam(value = "estimate", required = true) long estimate,
 			@RequestParam(value = "confidence", required = true) double confidence,
 			@RequestParam(value = "weight", required = true) double weight) {
@@ -180,6 +180,7 @@ public class APIOKRController {
 		validateTitle(title);
 		validateConfidence(confidence);
 		validateWeight(weight);
+		validateProgress(progress);
 		KeyResult keyResult = okrService.updateKeyResult(user, period, objective, id, title, estimate, confidence,
 				weight, progress);
 		if (keyResult == null) {
@@ -206,7 +207,7 @@ public class APIOKRController {
 	}
 	
 	@PostMapping(value = "/keyresult/rank")
-	public ResponseEntity<StandardRestResource> rankObjective(
+	public ResponseEntity<StandardRestResource> rankKeyResult(
 			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
@@ -316,6 +317,12 @@ public class APIOKRController {
 	private void validateWeight(double weight) {
 		if (weight < 0 || weight > 1) {
 			throw new ValidationException(1409, "invalid-weight");
+		}
+	}
+	
+	private void validateProgress(double progress) {
+		if (progress < 0 || progress > 1) {
+			throw new ValidationException(1410, "invalid-progress");
 		}
 	}
 
