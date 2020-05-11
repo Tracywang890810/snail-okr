@@ -11,7 +11,7 @@ snail:
       maxIdle: 8
       testOnIdle: true
     mongodb:
-      url: mongodb://root:seblong2015@182.254.245.148:27017/seblong?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+      url: mongodb://root:seblong2020@182.254.245.148:27017/okr?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
     wechat:
       suite_id: ww7f415908d88a68f6
       suite_secret: 9AdcW5sd1h_3fV8oNesASe_cMh8Gsft1qxHhyVHWXvU
