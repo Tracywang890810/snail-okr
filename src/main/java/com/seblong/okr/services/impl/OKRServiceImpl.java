@@ -72,7 +72,7 @@ public class OKRServiceImpl implements OKRService {
 
 	@Override
 	public Objective updateObjective(String user, String period, String id, String title, long estimate,
-			double confidence) throws ValidationException {
+			int confidence) throws ValidationException {
 		OKR okr = getOKR(user, period);
 		Objective objective = null;
 		if (okr != null) {
@@ -157,7 +157,7 @@ public class OKRServiceImpl implements OKRService {
 
 	@Override
 	public KeyResult updateKeyResult(String user, String period, String objectiveId, String id, String title,
-			long estimate, double confidence, double weight, double progress) throws ValidationException {
+			long estimate, int confidence, int weight, int progress) throws ValidationException {
 
 		OKR okr = getOKR(user, period);
 		KeyResult keyResult = null;
@@ -204,7 +204,7 @@ public class OKRServiceImpl implements OKRService {
 	}
 
 	@Override
-	public Objective scoreKeyResult(String user, String period, String objectiveId, String id, double score)
+	public Objective scoreKeyResult(String user, String period, String objectiveId, String id, int score)
 			throws ValidationException {
 
 		OKR okr = getOKR(user, period);

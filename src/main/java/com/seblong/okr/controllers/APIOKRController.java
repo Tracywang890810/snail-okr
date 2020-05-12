@@ -91,7 +91,7 @@ public class APIOKRController {
 			@RequestParam(value = "id", required = true) String id,
 			@RequestParam(value = "title", required = true) String title,
 			@RequestParam(value = "estimate", required = true) long estimate,
-			@RequestParam(value = "confidence", required = true) double confidence) {
+			@RequestParam(value = "confidence", required = true) int confidence) {
 
 		validateUser(user);
 		validatePeriod(period);
@@ -169,10 +169,10 @@ public class APIOKRController {
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id,
 			@RequestParam(value = "title", required = true) String title,
-			@RequestParam(value = "progress", required = true) double progress,
+			@RequestParam(value = "progress", required = true) int progress,
 			@RequestParam(value = "estimate", required = true) long estimate,
-			@RequestParam(value = "confidence", required = true) double confidence,
-			@RequestParam(value = "weight", required = true) double weight) {
+			@RequestParam(value = "confidence", required = true) int confidence,
+			@RequestParam(value = "weight", required = true) int weight) {
 		validateUser(user);
 		validatePeriod(period);
 		validateObjective(objective);
@@ -226,7 +226,7 @@ public class APIOKRController {
 			@RequestParam(value = "period", required = true) String period,
 			@RequestParam(value = "objective", required = true) String objective,
 			@RequestParam(value = "id", required = true) String id,
-			@RequestParam(value = "score", required = true) double score) {
+			@RequestParam(value = "score", required = true) int score) {
 		validateUser(user);
 		validatePeriod(period);
 		validateObjective(objective);
@@ -302,26 +302,26 @@ public class APIOKRController {
 		}
 	}
 
-	private void validateConfidence(double confidence) {
-		if (confidence < 0 || confidence > 1) {
+	private void validateConfidence(int confidence) {
+		if (confidence < 0 || confidence > 100) {
 			throw new ValidationException(1407, "invalid-confidence");
 		}
 	}
 
-	private void validateScore(double score) {
-		if (score < 0 || score > 10) {
+	private void validateScore(int score) {
+		if (score < 0 || score > 100) {
 			throw new ValidationException(1408, "invalid-score");
 		}
 	}
 
-	private void validateWeight(double weight) {
-		if (weight < 0 || weight > 1) {
+	private void validateWeight(int weight) {
+		if (weight < 0 || weight > 100) {
 			throw new ValidationException(1409, "invalid-weight");
 		}
 	}
 	
-	private void validateProgress(double progress) {
-		if (progress < 0 || progress > 1) {
+	private void validateProgress(int progress) {
+		if (progress < 0 || progress > 100) {
 			throw new ValidationException(1410, "invalid-progress");
 		}
 	}

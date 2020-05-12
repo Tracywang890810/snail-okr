@@ -116,11 +116,11 @@ public class OKR implements Serializable {
 
 		private String title;
 
-		private double score;
+		private int score;
 
 		private long estimate;
 
-		private double confidence;
+		private int confidence;
 
 		private List<KeyResult> keyResults;
 
@@ -134,7 +134,7 @@ public class OKR implements Serializable {
 			this(title, -1, -1);
 		}
 
-		public Objective(String title, long estimate, double confidence) {
+		public Objective(String title, long estimate, int confidence) {
 			this.id = new ObjectId();
 			this.title = title;
 			this.estimate = estimate;
@@ -199,7 +199,7 @@ public class OKR implements Serializable {
 			return null;
 		}
 
-		public KeyResult scoreKeyResult(ObjectId keyresultId, double socre){
+		public KeyResult scoreKeyResult(ObjectId keyresultId, int socre){
 			KeyResult keyResult = findKeyResult(keyresultId);
 			if( keyResult != null ){
 				keyResult.setScore(socre);
@@ -215,6 +215,7 @@ public class OKR implements Serializable {
 				for (KeyResult keyResult : keyResults) {
 					this.score += keyResult.getScore() * keyResult.getWeight();
 				}
+				this.score = Math.round(this.score / 100f);
 			}
 		}
 
@@ -234,21 +235,21 @@ public class OKR implements Serializable {
 
 		private String title;
 
-		private double progress;
+		private int progress;
 
-		private double score;
+		private int score;
 
 		private long estimate;
 
-		private double confidence;
+		private int confidence;
 
-		private double weight;
+		private int weight;
 
 		private long created;
 
 		private long updated;
 
-		public KeyResult(String title, long estimate, double confidence, double weight, double progress) {
+		public KeyResult(String title, long estimate, int confidence, int weight, int progress) {
 			this.id = new ObjectId();
 			this.title = title;
 			this.estimate = estimate;
