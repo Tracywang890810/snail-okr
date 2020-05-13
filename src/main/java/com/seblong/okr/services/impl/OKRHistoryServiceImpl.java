@@ -1,4 +1,5 @@
 package com.seblong.okr.services.impl;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -19,16 +20,16 @@ public class OKRHistoryServiceImpl implements OKRHistoryService {
 
 	@Autowired
 	private OKRHistoryRepository okrHistoryRepo;
-	
+
 	@Autowired
 	private OKRHistoryDateService okrHistoryDateService;
-	
+
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
-	
+
 	@Autowired
 	private ThreadPoolTaskExecutor executor;
-	
+
 	@Override
 	public void create(OKR okr) {
 		executor.execute(new Runnable() {
@@ -36,20 +37,21 @@ public class OKRHistoryServiceImpl implements OKRHistoryService {
 			public void run() {
 				LocalDate localDate = LocalDate.now();
 				String date = localDate.format(DateTimeFormatter.BASIC_ISO_DATE);
-				RedisLock redisLock = new RedisLock(redisTemplate, "OKR::HISTORY::"+okr.getUser());
+				RedisLock redisLock = new RedisLock(redisTemplate, "OKR::HISTORY::" + okr.getUser());
 				try {
 					redisLock.lock();
-					OKRHistory okrHistory = okrHistoryRepo.findByUserAndPeriodAndDate(okr.getUser(), okr.getPeriod(), date);
-					if( okrHistory == null ) {
+					OKRHistory okrHistory = okrHistoryRepo.findByUserAndPeriodAndDate(okr.getUser(), okr.getPeriod(),
+							date);
+					if (okrHistory == null) {
 						okrHistory = new OKRHistory(date, okr);
-					}else {
+					} else {
 						okrHistory.setOkr(okr);
 						okrHistory.setCreated(System.currentTimeMillis());
 					}
 					okrHistoryRepo.save(okrHistory);
-					okrHistoryDateService.add(okr.getUser(), okr.getPeriod(), date);
+					okrHistoryDateService.add(okr.getUser(), okr.getEnterpriseId(), okr.getPeriod(), date);
 				} catch (InterruptedException e) {
-				}finally {
+				} finally {
 					redisLock.unlock();
 				}
 			}

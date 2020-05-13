@@ -12,7 +12,7 @@ public interface OKRService {
 
 	List<Objective> listObjectives(String user, String period);
 
-	Objective addObjective(String user, String period, String title);
+	Objective addObjective(String user, String enterpriseId, String period, String title);
 
 	Objective updateObjective(String user, String period, String id, String title, long estimate, int confidence)
 			throws ValidationException;
@@ -33,4 +33,6 @@ public interface OKRService {
 			throws ValidationException;
 	
 	void rankKeyResult(String user, String period, String objective, int oldRank, int newRank);
+	
+	void deleteAll(String companyId);
 }

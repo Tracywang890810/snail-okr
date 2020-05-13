@@ -10,5 +10,6 @@ import com.seblong.okr.entities.OKRHistoryDate;
 public interface OKRHistoryDateRepository extends MongoRepository<OKRHistoryDate, ObjectId>{
 
 	OKRHistoryDate findByUserAndPeriod(String user, String period);
-	
+
+	long deleteByEnterpriseId(String companyId);
 }

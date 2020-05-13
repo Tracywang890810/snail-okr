@@ -18,13 +18,13 @@ public class OKRHistoryDateServiceImpl implements OKRHistoryDateService {
 	private RedisTemplate<String, Object> redisTemplate;
 	
 	@Override
-	public OKRHistoryDate add(String user, String period, String date) {
+	public OKRHistoryDate add(String user, String enterpriseId, String period, String date) {
 		RedisLock redisLock = new RedisLock(redisTemplate, "OKR::HISTORY:DATE::ADD::" + user);
 		try {
 			redisLock.lock();
 			OKRHistoryDate okrHistoryDate = okrHistoryDateRepo.findByUserAndPeriod(user, period);
 			if( okrHistoryDate == null ) {
-				okrHistoryDate = new OKRHistoryDate(user, period);
+				okrHistoryDate = new OKRHistoryDate(user, enterpriseId, period);
 			}
 			if(okrHistoryDate.addDate(date)) {
 				okrHistoryDate = okrHistoryDateRepo.save(okrHistoryDate);

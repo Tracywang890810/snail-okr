@@ -5,6 +5,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -12,6 +13,9 @@ import com.seblong.okr.entities.OKR;
 import com.seblong.okr.entities.OKR.KeyResult;
 import com.seblong.okr.entities.OKR.Objective;
 import com.seblong.okr.exceptions.ValidationException;
+import com.seblong.okr.repositories.OKRHistoryDateRepository;
+import com.seblong.okr.repositories.OKRHistoryRepository;
+import com.seblong.okr.repositories.OKRPeriodRepository;
 import com.seblong.okr.repositories.OKRRepository;
 import com.seblong.okr.services.OKRHistoryService;
 import com.seblong.okr.services.OKRService;
@@ -23,9 +27,22 @@ public class OKRServiceImpl implements OKRService {
 
 	@Autowired
 	private OKRRepository okrRepo;
+	
+	@Autowired
+	private OKRPeriodRepository okrPeriodRepo;
+	
+	@Autowired
+	private OKRHistoryRepository okrHistoryRepo;
+	
+	@Autowired
+	private OKRHistoryDateRepository okrHistoryDateRepo;
+	
 
 	@Autowired
 	private OKRHistoryService okrHistoryService;
+
+	@Autowired
+	private ThreadPoolTaskExecutor executor;
 
 	private final OKRCache CACHE_OKR;
 
@@ -58,10 +75,11 @@ public class OKRServiceImpl implements OKRService {
 	}
 
 	@Override
-	public Objective addObjective(String user, String period, String title) {
+	public Objective addObjective(String user, String enterpriseId, String period, String title) {
 		OKR okr = getOKR(user, period);
-		if (okr == null)
-			okr = new OKR(user, period);
+		if (okr == null){
+			okr = new OKR(user, period, enterpriseId);
+		}
 		Objective objective = new Objective(title);
 		okr.addObjective(objective);
 		okr = okrRepo.save(okr);
@@ -265,6 +283,16 @@ public class OKRServiceImpl implements OKRService {
 			}
 		}
 
+	}
+
+	@Override
+	public void deleteAll(String companyId) {
+		executor.execute(() -> {
+			okrRepo.deleteByEnterpriseId(companyId);
+			okrHistoryRepo.deleteByEnterpriseId(companyId);
+			okrHistoryDateRepo.deleteByEnterpriseId(companyId);
+			okrPeriodRepo.deleteByEnterpriseId(companyId);
+		});
 	}
 
 }

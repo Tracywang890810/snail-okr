@@ -28,7 +28,7 @@ public class APIEnterprisePeriodConfigController {
 
 	@PostMapping(value = "/create")
 	public ResponseEntity<StandardEntityResource<EnterprisePeriodConfig>> create(
-			@RequestParam(value = "enterpriseId") String enterpriseId, @RequestParam(value = "type") Type type,
+			@RequestParam(value = "companyId") String enterpriseId, @RequestParam(value = "type") Type type,
 			@RequestParam(value = "startDate") String startDate, @RequestParam(value = "year") boolean year) {
 
 		validate(enterpriseId, type, startDate);
@@ -40,7 +40,7 @@ public class APIEnterprisePeriodConfigController {
 
 	@PostMapping(value = "/update")
 	public ResponseEntity<StandardEntityResource<EnterprisePeriodConfig>> update(
-			@RequestParam(value = "enterpriseId") String enterpriseId, @RequestParam(value = "type") Type type,
+			@RequestParam(value = "companyId") String enterpriseId, @RequestParam(value = "type") Type type,
 			@RequestParam(value = "startDate") String startDate, @RequestParam(value = "year") boolean year) {
 
 		validate(enterpriseId, type, startDate);
@@ -52,7 +52,7 @@ public class APIEnterprisePeriodConfigController {
 
 	@GetMapping(value = "/get")
 	public ResponseEntity<StandardEntityResource<EnterprisePeriodConfig>> get(
-			@RequestParam(value = "enterpriseId") String enterpriseId) {
+			@RequestParam(value = "companyId") String enterpriseId) {
 		EnterprisePeriodConfig config = enterprisePeriodConfigService.get(enterpriseId);
 		if( config == null ) {
 			throw new ValidationException(1404, "config-not-exist");

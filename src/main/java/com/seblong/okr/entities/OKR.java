@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.CollectionUtils;
 
@@ -32,6 +33,9 @@ public class OKR implements Serializable {
 	@Id
 	private ObjectId id;
 
+	@Indexed
+	private String enterpriseId;
+	
 	private String user;
 
 	private String period;
@@ -43,12 +47,18 @@ public class OKR implements Serializable {
 	private long updated;
 
 	@PersistenceConstructor
-	public OKR(String user, String period, List<Objective> objectives, long created, long updated) {
+	public OKR(String user, String enterpriseId, String period, List<Objective> objectives, long created, long updated) {
 		this.user = user;
+		this.enterpriseId = enterpriseId;
 		this.period = period;
 		this.objectives = objectives;
 		this.created = created;
 		this.updated = updated;
+	}
+	
+	public OKR(String user, String period, String enterpriseId) {
+		this(user, period);
+		this.enterpriseId =enterpriseId;
 	}
 
 	public OKR(String user, String period) {

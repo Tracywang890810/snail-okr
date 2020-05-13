@@ -11,4 +11,5 @@ public interface OKRRepository extends MongoRepository<OKR, ObjectId>{
 
 	OKR findByUserAndPeriod(String user, String period);
 	
+	long deleteByEnterpriseId(String companyId);
 }

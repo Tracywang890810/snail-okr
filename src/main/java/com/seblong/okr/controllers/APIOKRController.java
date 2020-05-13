@@ -48,11 +48,12 @@ public class APIOKRController {
 	public ResponseEntity<StandardEntityResource<Objective>> addObjective(
 			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "period", required = true) String period,
-			@RequestParam(value = "title", required = true) String title) {
+			@RequestParam(value = "title", required = true) String title,
+			@RequestParam(value = "companyId",required = true) String enterpriseId) {
 		validateUser(user);
 		validatePeriod(period);
 		validateTitle(title);
-		Objective objective = okrService.addObjective(user, period, title);
+		Objective objective = okrService.addObjective(user,enterpriseId, period, title);
 		return new ResponseEntity<>(new StandardEntityResource<>(objective), HttpStatus.OK);
 	}
 

@@ -15,4 +15,6 @@ public interface OKRPeriodRepository extends MongoRepository<OKRPeriod, ObjectId
 	List<OKRPeriod> findByEnterpriseIdAndYear( String enterpriseId, String year );
 	
 	long countByEnterpriseIdAndTypeAndStartDate( String enterpriseId, Type type, String startDate );
+	
+	long deleteByEnterpriseId(String companyId);
 }
