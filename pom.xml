@@ -86,6 +86,17 @@
 			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>2.9.8</version>
 		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.2.2</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>kotlin-stdlib-common</artifactId>
+					<groupId>org.jetbrains.kotlin</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -81,6 +81,11 @@ public class Employee {
     private String telephone;
 
     /**
+     * 主部门
+     */
+    private int mainDepartment;
+
+    /**
      * 成员启用状态。1表示启用的成员，0表示被禁用。
      */
     @ApiModelProperty(value = "enable", name = "enable", dataType = "Integer", example = "成员启用状态。1表示启用的成员，0表示被禁用。")
@@ -99,11 +104,21 @@ public class Employee {
     @ApiModelProperty(value = "address", name = "address", dataType = "String", example = "地址")
     private String address;
 
+    /**
+     * 用户企业id
+     */
+    private String corpId;
+
+    /**
+     * 全局唯一。对于同一个服务商，不同应用获取到企业内同一个成员的open_userid是相同的，最多64个字节。仅第三方应用可获取
+     */
+    private String openId;
+
     public Employee() {
     }
 
     @PersistenceConstructor
-    public Employee(String userId, String name, String mobile, String position, String gender, String email, String avatar, String thumb_avatar, String telephone, int enable, int status, String address) {
+    public Employee(String userId, String name, String mobile, String position, String gender, String email, String avatar, String thumb_avatar, String telephone, int mainDepartment, int enable, int status, String address, String corpId, String openId) {
         this.userId = userId;
         this.name = name;
         this.mobile = mobile;
@@ -113,8 +128,11 @@ public class Employee {
         this.avatar = avatar;
         this.thumb_avatar = thumb_avatar;
         this.telephone = telephone;
+        this.mainDepartment = mainDepartment;
         this.enable = enable;
         this.status = status;
         this.address = address;
+        this.corpId = corpId;
+        this.openId = openId;
     }
 }

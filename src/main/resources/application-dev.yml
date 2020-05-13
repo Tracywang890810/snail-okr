@@ -11,7 +11,7 @@ snail:
       maxIdle: 8
       testOnIdle: true
     mongodb:
-      url: mongodb://root:seblong2020@182.254.245.148:27017/okr?maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
+      url: mongodb://root:seblong2015@182.254.245.148:27017/okr?authSource=admin&maxPoolSize=3000&waitQueueMultiple=500&waitQueueTimeoutMS=5000
     wechat:
       suite_id: ww7f415908d88a68f6
       suite_secret: 9AdcW5sd1h_3fV8oNesASe_cMh8Gsft1qxHhyVHWXvU
@@ -32,6 +32,16 @@ snail:
         corp_token: https://qyapi.weixin.qq.com/cgi-bin/service/get_corp_token
         #发送消息URL
         send_message: https://qyapi.weixin.qq.com/cgi-bin/message/send
+        #登录回调URL
+        redirect: https://api.snailsleep.net/okr-pc/index
+        #用户授权构造链接
+        auth: https://open.weixin.qq.com/connect/oauth2/authorize
+        #获取访问用户身份链接
+        getuserinfo3rd: https://qyapi.weixin.qq.com/cgi-bin/service/getuserinfo3rd
+        #获取访问用户信息链接
+        getuserdetail3rd: https://qyapi.weixin.qq.com/cgi-bin/user/get
+        #搜索用户链接
+        search: https://qyapi.weixin.qq.com/cgi-bin/service/contact/search
 swagger:
   enabled: true
 logging:

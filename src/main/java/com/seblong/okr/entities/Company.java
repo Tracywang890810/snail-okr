@@ -46,7 +46,7 @@ public class Company {
     /**
      * 授权方应用id
      */
-    private String agentId;
+    private int agentId;
 
     /**
      * 授权方应用名字
@@ -76,32 +76,32 @@ public class Company {
     /**
      * 应用可见范围（部门）
      */
-    private List<Integer> allowParty;
+    private List<Object> allowParty;
 
     /**
      * 应用可见范围（成员）
      */
-    private List<String> allowUser;
+    private List<Object> allowUser;
 
     /**
      * 应用可见范围（标签）
      */
-    private List<Integer> allowTag;
+    private List<Object> allowTag;
 
     /**
      * 额外通讯录（部门）
      */
-    private List<Integer> extraParty;
+    private List<Object> extraParty;
 
     /**
      * 额外通讯录（成员）
      */
-    private List<String> extraUser;
+    private List<Object> extraUser;
 
     /**
      * 额外通讯录（标签）
      */
-    private List<Integer> extraTag;
+    private List<Object> extraTag;
 
     /**
      * 授权操作人的userid
@@ -150,7 +150,7 @@ public class Company {
     }
 
     @PersistenceConstructor
-    public Company(String name, String fullName, String corpId, String agentId, String agentName, int level, String agentSquareLogoUrl, String agentRoundLogoUrl, List<Integer> allowParty, List<String> allowUser, List<Integer> allowTag, List<Integer> extraParty, List<String> extraUser, List<Integer> extraTag, String authUserId, String authUserName, String authUserAvatar, String corpSquareLogoUrl, long end, int employees, String permanentCode, long created, long updated, int status) {
+    public Company(String name, String fullName, String corpId, Integer agentId, String agentName, int level, String agentSquareLogoUrl, String agentRoundLogoUrl, List<Object> allowParty, List<Object> allowUser, List<Object> allowTag, List<Object> extraParty, List<Object> extraUser, List<Object> extraTag, String authUserId, String authUserName, String authUserAvatar, String corpSquareLogoUrl, long end, int employees, String permanentCode, long created, long updated, int status) {
         this.name = name;
         this.fullName = fullName;
         this.corpId = corpId;
