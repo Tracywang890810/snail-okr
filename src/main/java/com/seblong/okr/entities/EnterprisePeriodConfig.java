@@ -108,7 +108,7 @@ public class EnterprisePeriodConfig {
 	}
 
 	public static String generateStartDateRegex(Type type) {
-		int num = 6;
+		int num = type.num;
 		StringBuilder sb = new StringBuilder("^20\\d{2}(?:");
 		IntStream.range(1, 12 / num + 1).forEach(n -> {
 			n = num * (n - 1) + 1;

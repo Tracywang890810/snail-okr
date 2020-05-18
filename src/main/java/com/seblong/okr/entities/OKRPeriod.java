@@ -68,7 +68,7 @@ public class OKRPeriod {
 		LocalDate startLocalDate = LocalDate.parse(startDate, DateTimeFormatter.BASIC_ISO_DATE);
 		long end = startLocalDate.plusMonths(type.num - 1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1)
 				.atStartOfDay().toEpochSecond(ZoneOffset.ofHours(8));
-		OKRPeriod okrPeriod = new OKRPeriod(enterpriseId, type, startDate,  startDate.substring(0, 5), start, end);
+		OKRPeriod okrPeriod = new OKRPeriod(enterpriseId, type, startDate,  startDate.substring(0, 4), start, end);
 		return okrPeriod;
 	}
 
