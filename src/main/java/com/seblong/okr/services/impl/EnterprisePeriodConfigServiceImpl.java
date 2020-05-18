@@ -53,10 +53,10 @@ public class EnterprisePeriodConfigServiceImpl implements EnterprisePeriodConfig
 			}
 			if (year) {
 				// 创建年度period
-				startDate = startDate.substring(0, 5) + "0101";
+				startDate = startDate.substring(0, 4) + "0101";
 				start = LocalDate.parse(startDate, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay()
 						.toEpochSecond(ZoneOffset.ofHours(8)) * 1000;
-				okrPeriodService.create(enterpriseId, type, startDate, start);
+				okrPeriodService.create(enterpriseId, Type.YEAR, startDate, start);
 			}
 			return enterprisePeriodConfigRepo.save(enterprisePeriodConfig);
 		} catch (InterruptedException e) {
@@ -101,7 +101,7 @@ public class EnterprisePeriodConfigServiceImpl implements EnterprisePeriodConfig
 			startDate = startDate.substring(0, 5) + "0101";
 			long start = LocalDate.parse(startDate, DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay()
 					.toEpochSecond(ZoneOffset.ofHours(8)) * 1000;
-			okrPeriodService.create(enterpriseId, type, startDate, start);
+			okrPeriodService.create(enterpriseId, Type.YEAR, startDate, start);
 		}
 		enterprisePeriodConfig.setYear(year);
 
