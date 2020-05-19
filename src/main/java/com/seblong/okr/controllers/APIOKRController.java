@@ -98,7 +98,6 @@ public class APIOKRController {
 		validatePeriod(period);
 		validateObjective(id);
 		validateTitle(title);
-		validateConfidence(confidence);
 		Objective objective = okrService.updateObjective(user, period, id, title, estimate, confidence);
 		if (objective == null) {
 			throw new ValidationException(1404, "objective-not-exist");
@@ -179,9 +178,6 @@ public class APIOKRController {
 		validateObjective(objective);
 		validateKeyResult(id);
 		validateTitle(title);
-		validateConfidence(confidence);
-		validateWeight(weight);
-		validateProgress(progress);
 		KeyResult keyResult = okrService.updateKeyResult(user, period, objective, id, title, estimate, confidence,
 				weight, progress);
 		if (keyResult == null) {
@@ -232,7 +228,6 @@ public class APIOKRController {
 		validatePeriod(period);
 		validateObjective(objective);
 		validateKeyResult(id);
-		validateScore(score);
 		Objective object = okrService.scoreKeyResult(user, period, objective, id, score);
 		if (object == null) {
 			throw new ValidationException(1404, "keyresult-not-exist");
@@ -303,28 +298,28 @@ public class APIOKRController {
 		}
 	}
 
-	private void validateConfidence(int confidence) {
-		if (confidence < 0 || confidence > 100) {
-			throw new ValidationException(1407, "invalid-confidence");
-		}
-	}
-
-	private void validateScore(int score) {
-		if (score < 0 || score > 100) {
-			throw new ValidationException(1408, "invalid-score");
-		}
-	}
-
-	private void validateWeight(int weight) {
-		if (weight < 0 || weight > 100) {
-			throw new ValidationException(1409, "invalid-weight");
-		}
-	}
-	
-	private void validateProgress(int progress) {
-		if (progress < 0 || progress > 100) {
-			throw new ValidationException(1410, "invalid-progress");
-		}
-	}
+//	private void validateConfidence(int confidence) {
+//		if (confidence < 0 || confidence > 100) {
+//			throw new ValidationException(1407, "invalid-confidence");
+//		}
+//	}
+//
+//	private void validateScore(int score) {
+//		if (score < 0 || score > 100) {
+//			throw new ValidationException(1408, "invalid-score");
+//		}
+//	}
+//
+//	private void validateWeight(int weight) {
+//		if (weight < 0 || weight > 100) {
+//			throw new ValidationException(1409, "invalid-weight");
+//		}
+//	}
+//	
+//	private void validateProgress(int progress) {
+//		if (progress < 0 || progress > 100) {
+//			throw new ValidationException(1410, "invalid-progress");
+//		}
+//	}
 
 }
