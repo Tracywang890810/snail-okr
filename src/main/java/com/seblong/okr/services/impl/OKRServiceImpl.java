@@ -278,7 +278,7 @@ public class OKRServiceImpl implements OKRService {
 			for (KeyResult keyResult : objective.getKeyResults()) {
 				total += keyResult.getWeight();
 			}
-			if (total > 1) {
+			if (total > 100) {
 				throw new ValidationException(400, "weight-exceed");
 			}
 		}
