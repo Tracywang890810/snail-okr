@@ -95,7 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee findById(String unique) {
         Optional<Employee> optional = employeeRepo.findById(new ObjectId(unique));
-        return optional.orElse(null) == null ? null : optional.get();
+        return optional.orElse(null);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         follow = new Follow(from.getId().toString(), target.getId().toString(), System.currentTimeMillis());
         follow = followRepo.save(follow);
-        Company company = companyRepo.findByCorpId(target.getCorpId());
+        Company company = companyRepo.findById(new ObjectId(target.getCorpId())).orElse(null);
         String description = "$userName=" + from.getUserId() + "$关注了您。";
         messageService.sendMessageToUser(target.getUserId(), target.getCorpId(), company.getPermanentCode(), company.getAgentId(), "关注通知", description, redirectUrl, null, null, null, null);
         return follow;
@@ -152,6 +152,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         params.put("limit", 200);
         String result = HttpUtil.post(restTemplate, searchUrl, params, String.class);
         JSONObject json = new JSONObject(result);
+        logger.info("用户搜索返回数据" + result);
         if(json.getInt("errcode") == 0){
             List<Employee> employeeList = new ArrayList<>();
             boolean isLast = json.getBoolean("is_last");
@@ -172,7 +173,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(employee == null){
             return null;
         }
-        employee = getUserInfo3rd(accessToken, employee);
+        Company company = companyRepo.findById(new ObjectId(employee.getCorpId())).orElse(null);
+        employee = getUserInfo3rd(corpService.getCorpToken(company.getCorpId(), company.getPermanentCode()), employee);
         employee = employeeRepo.save(employee);
         return employee;
     }
@@ -193,11 +195,11 @@ public class EmployeeServiceImpl implements EmployeeService {
             if(resObj.has("UserId")) {
                 String userId = resObj.getString("UserId");
                 String corpId = resObj.getString("CorpId");
-                Employee employee = employeeRepo.findByUserIdAndCorpId(userId, corpId);
+                Company company = companyRepo.findByCorpId(corpId);
+                Employee employee = employeeRepo.findByUserIdAndCorpId(userId, company.getId().toString());
                 if(employee == null){
                     employee = new Employee();
                     employee.setUserId(userId);
-                    Company company = companyRepo.findByCorpId(corpId);
                     employee.setCorpId(company.getId().toString());
                     employee.setOpenId(resObj.getString("open_userid"));
                 }
@@ -206,6 +208,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 logger.error("解析用户id信息失败");
             }
         }else if(errCode == 40014){
+            logger.error("accessToken过期，重新获取后再次尝试获取用户id");
             return getUserId(corpService.refreshSuiteToken(), code);
         }else {
             logger.error("获取用户id失败，errcode：" + errCode + "，errmsg：" + resObj.getString("errmsg"));
@@ -219,26 +222,27 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return
      */
     private Employee getUserInfo3rd(String accessToken, Employee employee){
-        String url = getUserDetail3rdUrl + "?suite_access_token=" + accessToken + "&userid=" + employee.getUserId();
+        String url = getUserDetail3rdUrl + "?access_token=" + accessToken + "&userid=" + employee.getUserId();
         String response = HttpUtil.get(restTemplate, url, String.class);
         JSONObject resObj = new JSONObject(response);
         int errCode = resObj.getInt("errcode");
         if(errCode == 0){
             employee.setAddress(resObj.has("address") ? resObj.get("address")+"" : null);
-            employee.setAvatar(resObj.getString("avatar"));
-            employee.setEmail(resObj.getString("email"));
-            employee.setEnable(resObj.getInt("enable"));
+//            employee.setAvatar(resObj.getString("avatar"));
+//            employee.setEmail(resObj.getString("email"));
+//            employee.setEnable(resObj.getInt("enable"));
             employee.setGender(resObj.getString("gender"));
-            employee.setMobile(resObj.getString("mobile"));
-            employee.setName(resObj.getString("name"));
-            employee.setPosition(resObj.getString("position"));
+//            employee.setMobile(resObj.getString("mobile"));
+//            employee.setName(resObj.getString("name"));
+            employee.setPosition(resObj.has("external_position") ? resObj.getString("external_position") : null);
             employee.setStatus(resObj.getInt("status"));
-            employee.setTelephone(resObj.getString("telephone"));
-            employee.setThumb_avatar(resObj.getString("thumb_avatar"));
+//            employee.setTelephone(resObj.getString("telephone"));
+//            employee.setThumb_avatar(resObj.getString("thumb_avatar"));
             employee.setUserId(resObj.getString("userid"));
             employee.setMainDepartment(resObj.getInt("main_department"));
             return employee;
         }else if(errCode == 40014){
+            logger.error("accessToken过期，重新获取后再次尝试获取用户信息");
             return getUserInfo3rd(corpService.refreshSuiteToken(), employee);
         }else {
             logger.error("获取用户信息失败，errcode：" + errCode + ", errmsg: " + resObj.getString("errmsg"));

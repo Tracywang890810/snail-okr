@@ -13,4 +13,6 @@ public interface FollowRepository extends MongoRepository<Follow, ObjectId> {
     List<Follow> findByEmployee(String employeeId);
 
     Follow findByEmployeeAndTarget(String toString, String toString1);
+
+    void deleteByCompanyId(String companyId);
 }

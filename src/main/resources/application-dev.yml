@@ -33,7 +33,7 @@ snail:
         #发送消息URL
         send_message: https://qyapi.weixin.qq.com/cgi-bin/message/send
         #登录回调URL
-        redirect: https://api.snailsleep.net/okr-pc/index
+        redirect: https://api.snailsleep.net/beepc/index
         #用户授权构造链接
         auth: https://open.weixin.qq.com/connect/oauth2/authorize
         #获取访问用户身份链接
@@ -42,6 +42,10 @@ snail:
         getuserdetail3rd: https://qyapi.weixin.qq.com/cgi-bin/user/get
         #搜索用户链接
         search: https://qyapi.weixin.qq.com/cgi-bin/service/contact/search
+        #获取企业jsapiticket
+        js_api_corp_ticket: https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket
+        #获取应用的jsapiticket
+        js_api_agent_ticket: https://qyapi.weixin.qq.com/cgi-bin/ticket/get
 swagger:
   enabled: true
 logging:

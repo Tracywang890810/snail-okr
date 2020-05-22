@@ -17,4 +17,6 @@ public interface EmployeeRepository extends MongoRepository<Employee, ObjectId> 
     Employee findByUserId(String userId);
 
     Employee findByUserIdAndCorpId(String userId, String corpId);
+
+    void deleteByCorpId(String companyId);
 }

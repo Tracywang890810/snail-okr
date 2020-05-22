@@ -1,6 +1,7 @@
 package com.seblong.okr.services.impl;
 
 import com.seblong.okr.entities.Aligning;
+import com.seblong.okr.entities.Employee;
 import com.seblong.okr.repositories.AligningRepository;
 import com.seblong.okr.services.AligningService;
 import org.bson.types.ObjectId;
@@ -16,13 +17,14 @@ public class AligningServiceImpl implements AligningService {
     private AligningRepository aligningRepo;
 
     @Override
-    public Aligning align(String employeeId, String objectiveId, String periodId, String targetEId, String targetOId) {
+    public Aligning align(String employeeId, String objectiveId, String periodId, Employee target, String targetOId) {
         Aligning aligning = new Aligning();
         aligning.setCreated(System.currentTimeMillis());
         aligning.setEmployee(employeeId);
         aligning.setObjective(objectiveId);
         aligning.setPeriod(periodId);
-        aligning.setTargetE(targetEId);
+        aligning.setTargetE(target.getUserId());
+        aligning.setCompanyId(target.getCorpId());
         aligning.setTargetO(targetOId);
         aligning = aligningRepo.save(aligning);
         return aligning;

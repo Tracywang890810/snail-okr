@@ -38,13 +38,6 @@ public class Employee {
     private String name;
 
     /**
-     * 手机号码，第三方仅通讯录应用可获取
-     */
-    @ApiModelProperty(value = "mobile", name = "mobile", dataType = "String", example = "用户手机号")
-    @Indexed
-    private String mobile;
-
-    /**
      * 职务信息
      */
     @ApiModelProperty(value = "position", name = "position", dataType = "String", example = "用户职务信息")
@@ -55,12 +48,6 @@ public class Employee {
      */
     @ApiModelProperty(value = "gender", name = "gender", dataType = "String", example = "性别。0表示未定义，1表示男性，2表示女性")
     private String gender;
-
-    /**
-     * 邮箱
-     */
-    @ApiModelProperty(value = "email", name = "email", dataType = "String", example = "邮箱")
-    private String email;
 
     /**
      * 头像url
@@ -75,21 +62,9 @@ public class Employee {
     private String thumb_avatar;
 
     /**
-     * 座机
-     */
-    @ApiModelProperty(value = "telephone", name = "telephone", dataType = "String", example = "座机号码")
-    private String telephone;
-
-    /**
      * 主部门
      */
     private int mainDepartment;
-
-    /**
-     * 成员启用状态。1表示启用的成员，0表示被禁用。
-     */
-    @ApiModelProperty(value = "enable", name = "enable", dataType = "Integer", example = "成员启用状态。1表示启用的成员，0表示被禁用。")
-    private int enable;
 
     /**
      * 激活状态: 1=已激活，2=已禁用，4=未激活
@@ -118,18 +93,14 @@ public class Employee {
     }
 
     @PersistenceConstructor
-    public Employee(String userId, String name, String mobile, String position, String gender, String email, String avatar, String thumb_avatar, String telephone, int mainDepartment, int enable, int status, String address, String corpId, String openId) {
+    public Employee(String userId, String name, String position, String gender, String avatar, String thumb_avatar, int mainDepartment, int status, String address, String corpId, String openId) {
         this.userId = userId;
         this.name = name;
-        this.mobile = mobile;
         this.position = position;
         this.gender = gender;
-        this.email = email;
         this.avatar = avatar;
         this.thumb_avatar = thumb_avatar;
-        this.telephone = telephone;
         this.mainDepartment = mainDepartment;
-        this.enable = enable;
         this.status = status;
         this.address = address;
         this.corpId = corpId;

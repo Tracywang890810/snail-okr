@@ -43,7 +43,8 @@ public class APIAligningController {
             rMap.put("message", "employee-not-exists");
             return rMap;
         }
-        if(employeeService.findById(targetEId) == null){
+        Employee target = employeeService.findById(targetEId);
+        if(target == null){
             rMap.put("status", 404);
             rMap.put("message", "targetE-not-exists");
             return rMap;
@@ -53,7 +54,7 @@ public class APIAligningController {
             rMap.put("message", "objective-has-aligning");
             return rMap;
         }
-        Aligning aligning = aligningService.align(employeeId, objectiveId, periodId, targetEId, targetOId);
+        Aligning aligning = aligningService.align(employeeId, objectiveId, periodId, target, targetOId);
         rMap.put("status", 200);
         rMap.put("message", "OK");
         rMap.put("unique", aligning.getId().toString());

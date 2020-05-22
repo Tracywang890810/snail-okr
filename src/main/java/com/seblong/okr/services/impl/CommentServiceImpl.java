@@ -39,17 +39,18 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment comment(String employeeId, String period, String ownerId, String content) {
+        Employee owner = employeeService.findById(ownerId);
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setEmployee(employeeId);
         comment.setOwner(ownerId);
         comment.setPeriod(period);
+        comment.setCompanyId(owner.getCorpId());
         comment = commentRepo.save(comment);
         Employee employee = employeeService.findById(employeeId);
-        Employee owner = employeeService.findById(ownerId);
-        Company company = companyRepo.findByCorpId(owner.getCorpId());
+        Company company = companyRepo.findById(new ObjectId(owner.getCorpId())).orElse(null);
         String description = "$userName=" + employee.getUserId() + "$关注了您。";
-        messageService.sendMessageToUser(owner.getUserId(), owner.getCorpId(), company.getPermanentCode(), company.getAgentId(), "评论通知", description, redirectUrl, null, null, null, null);
+        messageService.sendMessageToUser(owner.getUserId(), company.getCorpId(), company.getPermanentCode(), company.getAgentId(), "评论通知", description, redirectUrl, null, null, null, null);
         return comment;
     }
 

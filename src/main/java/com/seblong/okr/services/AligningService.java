@@ -1,11 +1,12 @@
 package com.seblong.okr.services;
 
 import com.seblong.okr.entities.Aligning;
+import com.seblong.okr.entities.Employee;
 
 import java.util.List;
 
 public interface AligningService {
-    Aligning align(String employeeId, String objectiveId, String periodId, String targetEId, String targetOId);
+    Aligning align(String employeeId, String objectiveId, String periodId, Employee target, String targetOId);
 
     void remove(String unique);
 

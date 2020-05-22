@@ -2,9 +2,12 @@ package com.seblong.okr.services.impl;
 
 import com.seblong.okr.entities.Company;
 import com.seblong.okr.repositories.CompanyRepository;
+import com.seblong.okr.services.CompanyService;
 import com.seblong.okr.services.CorpService;
+import com.seblong.okr.services.OKRService;
 import com.seblong.okr.utils.HttpRequestUtil;
-import com.seblong.okr.utils.HttpUtil;
+import com.seblong.okr.utils.SecuritySHA1Utils;
+import com.seblong.okr.utils.StringUtil;
 import com.seblong.okr.utils.XmlUtil;
 import com.seblong.okr.utils.wx.AesException;
 import com.seblong.okr.utils.wx.WXBizMsgCrypt;
@@ -32,7 +35,7 @@ public class CorpServiceImpl implements CorpService {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private CompanyService companyService;
 
     @Autowired
     private CompanyRepository companyRepo;
@@ -63,6 +66,10 @@ public class CorpServiceImpl implements CorpService {
 
     private final String CORP_TOKEN_KEY = "CORP_ACCESS_TOKEN_KEY";
 
+    private final String JSAPI_CORP_TICKET_KEY = "JSAPI_CORP_TICKET_KEY";
+
+    private final String JSAPI_AGENT_TICKET_KEY = "JSAPI_AGENT_TICKET_KEY";
+
     /**
      * 获取服务商凭证URL
      */
@@ -89,6 +96,12 @@ public class CorpServiceImpl implements CorpService {
 
     @Value("${snail.okr.wechat.url.corp_token}")
     private String corp_token_url;
+
+    @Value("${snail.okr.wechat.url.js_api_corp_ticket}")
+    private String js_api_corp_ticket_url;
+
+    @Value("${snail.okr.wechat.url.js_api_agent_ticket}")
+    private String js_api_agent_ticket_url;
 
     private WXBizMsgCrypt init(String receiveId) throws AesException {
         return new WXBizMsgCrypt(token, encodingAesKey, receiveId);
@@ -127,7 +140,11 @@ public class CorpServiceImpl implements CorpService {
                     getAuthInfo(authCorpId, company);
                 }
             }else if("cancel_auth".equals(infoType)){       //取消授权通知事件，删除企业所有相关信息
-
+                String authCorpId = dataMap.get("AuthCorpId").toString();
+                Company company = companyRepo.findByCorpId(authCorpId);
+                if(company != null){
+                    companyService.cleanData(company.getId().toString());
+                }
             }
         }
         return "success";
@@ -258,7 +275,7 @@ public class CorpServiceImpl implements CorpService {
         String url = auth_info_url + "?suite_access_token=%s";
         url = String.format(url, refreshSuiteToken());
         JSONObject params = new JSONObject();
-        params.put("suite_access_token", refreshSuiteToken());
+//        params.put("suite_access_token", refreshSuiteToken());
         params.put("auth_corpid", corpId);
         params.put("permanent_code", company.getPermanentCode());
         String result = null;
@@ -358,6 +375,10 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String refreshSuiteToken(){
+        Object val = redisTemplate.opsForValue().get(SUITE_TOKEN_KEY + "_" + suite_id);
+        if(val != null){
+            return val.toString();
+        }
         JSONObject params = new JSONObject();
         params.put("suite_id", suite_id);
         params.put("suite_secret", suite_secret);
@@ -380,7 +401,7 @@ public class CorpServiceImpl implements CorpService {
             return null;
         }
         redisTemplate.opsForValue().set(SUITE_TOKEN_KEY + "_" + suite_id, json.getString("suite_access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
-        logger.info("获取服务商凭证完成：suite_access_token：" + json.getString("suite_access_token"));
+        logger.info("获取第三方应用凭证完成：suite_access_token：" + json.getString("suite_access_token"));
         return json.getString("suite_access_token");
     }
 
@@ -393,6 +414,10 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String getCorpToken(String authCorpId, String permanentCode){
+        Object val = redisTemplate.opsForValue().get(CORP_TOKEN_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
         String url = corp_token_url + "?suite_access_token=%s";
         url = String.format(url, refreshSuiteToken());
         JSONObject params = new JSONObject();
@@ -410,8 +435,83 @@ public class CorpServiceImpl implements CorpService {
             logger.error("获取企业凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
             return null;
         }
-        redisTemplate.opsForValue().set(CORP_TOKEN_KEY + "_" + corpId, json.getString("access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(CORP_TOKEN_KEY + "_" + authCorpId, json.getString("access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
         logger.info("获取企业凭证完成：corp_access_token：" + json.getString("access_token"));
         return json.getString("access_token");
+    }
+
+    @Override
+    public String getJSAPICorpTicket(String authCorpId, String permanentCode){
+        Object val = redisTemplate.opsForValue().get(JSAPI_CORP_TICKET_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
+        String accessToken = getCorpToken(authCorpId, permanentCode);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendGet(js_api_corp_ticket_url, "access_token=" + accessToken);
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取JSAPI企业凭证出错：errmsg：" + e.getMessage());
+        }
+        JSONObject json = new JSONObject(result);
+        if(!json.has("ticket")){
+            logger.error("获取JSAPI企业凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
+            return null;
+        }
+        redisTemplate.opsForValue().set(JSAPI_CORP_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        logger.info("获取JSAPI企业凭证完成：JSAPI_CORP_TICKET：" + json.getString("ticket"));
+        return json.getString("ticket");
+    }
+
+    @Override
+    public String getJSAPIAgentTicket(String authCorpId){
+        Object val = redisTemplate.opsForValue().get(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
+        String accessToken = refreshSuiteToken();
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendGet(js_api_agent_ticket_url, "access_token=" + accessToken + "&type=agent_config");
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取JSAPI应用凭证出错：errmsg：" + e.getMessage());
+        }
+        JSONObject json = new JSONObject(result);
+        if(!json.has("ticket")){
+            logger.error("获取JSAPI应用凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
+            return null;
+        }
+        redisTemplate.opsForValue().set(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        logger.info("获取JSAPI应用凭证完成：JSAPI_AGENT_TICKET：" + json.getString("ticket"));
+        return json.getString("ticket");
+    }
+
+    @Override
+    public Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, String type){
+        Map<String, Object> rMap = new HashMap<>(4);
+        String noncestr = StringUtil.randomNumStr(16);
+        rMap.put("noncestr", noncestr);
+        String jsapi_ticket = "";
+        if("suite".equals(type)){
+            jsapi_ticket = getJSAPIAgentTicket(authCorpId);
+            rMap.put("jsapi_ticket", jsapi_ticket);
+        }else {
+            jsapi_ticket = getJSAPICorpTicket(authCorpId, permanentCode);
+            rMap.put("jsapi_ticket", jsapi_ticket);
+        }
+        rMap.put("url", url);
+        long timestamp = System.currentTimeMillis();
+        rMap.put("timestamp", timestamp);
+        String signStr = "jsapi_ticket=" + jsapi_ticket + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
+        try {
+            String sign = SecuritySHA1Utils.shaEncode(signStr);
+            rMap.put("sign", sign);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return rMap;
     }
 }

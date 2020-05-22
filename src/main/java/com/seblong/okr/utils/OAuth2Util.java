@@ -110,39 +110,4 @@ public class OAuth2Util {
         return json.getString("suite_access_token");
     }
 
-    /**
-     * 根据用户id获取用户信息
-     * @param restTemplate
-     * @param accessToken
-     * @param userId
-     * @return
-     */
-    @SuppressWarnings({ "rawtypes" })
-    public static Employee getUserInfo(RestTemplate restTemplate, RedisTemplate redisTemplate, String accessToken, String userId, String appId, String secret, String suiteTicketKey, String suiteTokenUrl, String suiteTokenKey){
-        String url = "https://qyapi.weixin.qq.com/cgi-bin/service/getuserinfo3rd?suite_access_token=" + accessToken + "&userid=" + userId;
-        String response = HttpUtil.get(restTemplate, url, String.class);
-        JSONObject resObj = new JSONObject(response);
-        int errCode = resObj.getInt("errcode");
-        if(errCode == 0){
-            Employee employee = new Employee();
-            employee.setAddress(resObj.has("address") ? resObj.get("address")+"" : null);
-            employee.setAvatar(resObj.getString("avatar"));
-            employee.setEmail(resObj.getString("email"));
-            employee.setEnable(resObj.getInt("enable"));
-            employee.setGender(resObj.getString("gender"));
-            employee.setMobile(resObj.getString("mobile"));
-            employee.setName(resObj.getString("name"));
-            employee.setPosition(resObj.getString("position"));
-            employee.setStatus(resObj.getInt("status"));
-            employee.setTelephone(resObj.getString("telephone"));
-            employee.setThumb_avatar(resObj.getString("thumb_avatar"));
-            employee.setUserId(resObj.getString("userid"));
-            return employee;
-        }else if(errCode == 40014){
-            return getUserInfo(restTemplate, redisTemplate, refreshSuiteToken(restTemplate, redisTemplate, appId, secret, suiteTicketKey, suiteTokenUrl, suiteTokenKey), userId, appId, secret, suiteTicketKey, suiteTokenUrl, suiteTokenKey);
-        }
-        return null;
-    }
-
-
 }

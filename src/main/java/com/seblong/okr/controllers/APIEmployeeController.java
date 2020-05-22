@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/employee", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(value = "/employee", produces = {MediaType.APPLICATION_JSON_VALUE})
 public class APIEmployeeController {
 
     protected static final Logger logger = LoggerFactory.getLogger(APIEmployeeController.class);

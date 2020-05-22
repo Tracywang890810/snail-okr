@@ -1,7 +1,6 @@
 package com.seblong.okr.controllers;
 
 import com.seblong.okr.services.CorpService;
-import com.seblong.okr.utils.XmlUtil;
 import com.seblong.okr.utils.wx.AesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
