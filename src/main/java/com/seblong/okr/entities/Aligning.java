@@ -46,12 +46,20 @@ public class Aligning {
     /**
      * 对齐员工id
      */
+    @Indexed
     private String targetE;
 
     /**
      * OKR周期id
      */
+    @Indexed
     private String period;
+
+    /**
+     * 公司id
+     */
+    @Indexed
+    private String companyId;
 
     @JsonIgnore
     private Long created;
@@ -60,12 +68,13 @@ public class Aligning {
     }
 
     @PersistenceConstructor
-    public Aligning(String employee, String objective, String targetO, String targetE, String period, Long created) {
+    public Aligning(String employee, String objective, String targetO, String targetE, String period, String companyId, Long created) {
         this.employee = employee;
         this.objective = objective;
         this.targetO = targetO;
         this.targetE = targetE;
         this.period = period;
+        this.companyId = companyId;
         this.created = created;
     }
 }

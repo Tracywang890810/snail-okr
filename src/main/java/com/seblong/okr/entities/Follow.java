@@ -35,6 +35,9 @@ public class Follow {
     @Indexed
     private String target;
 
+    @Indexed
+    private String companyId;
+
     @Transient
     private String name;
 

@@ -14,4 +14,6 @@ public interface CommentRepository extends MongoRepository<Comment, ObjectId> {
     List<Comment> findByPeriodAndEmployeeAndStatus(String period, String employeeId, String status, Sort sort);
 
     List<Comment> findByPeriodAndOwnerAndStatus(String period, String employeeId, String status, Sort sort);
+
+    void deleteByCompanyId(String companyId);
 }

@@ -33,6 +33,9 @@ public class Comment {
     private String content;
 
     @Indexed
+    private String companyId;
+
+    @Indexed
     private Long created;
 
     private String status;
@@ -56,11 +59,12 @@ public class Comment {
     }
 
     @PersistenceConstructor
-    public Comment(String period, String owner, String employee, String content, Long created, String status, Long updated) {
+    public Comment(String period, String owner, String employee, String content, String companyId, Long created, String status, Long updated) {
         this.period = period;
         this.owner = owner;
         this.employee = employee;
         this.content = content;
+        this.companyId = companyId;
         this.created = created;
         this.status = status;
         this.updated = updated;

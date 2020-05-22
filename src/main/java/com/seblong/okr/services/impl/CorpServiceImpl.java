@@ -2,8 +2,12 @@ package com.seblong.okr.services.impl;
 
 import com.seblong.okr.entities.Company;
 import com.seblong.okr.repositories.CompanyRepository;
+import com.seblong.okr.services.CompanyService;
 import com.seblong.okr.services.CorpService;
-import com.seblong.okr.utils.HttpUtil;
+import com.seblong.okr.services.OKRService;
+import com.seblong.okr.utils.HttpRequestUtil;
+import com.seblong.okr.utils.SecuritySHA1Utils;
+import com.seblong.okr.utils.StringUtil;
 import com.seblong.okr.utils.XmlUtil;
 import com.seblong.okr.utils.wx.AesException;
 import com.seblong.okr.utils.wx.WXBizMsgCrypt;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +35,7 @@ public class CorpServiceImpl implements CorpService {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private CompanyService companyService;
 
     @Autowired
     private CompanyRepository companyRepo;
@@ -61,6 +66,10 @@ public class CorpServiceImpl implements CorpService {
 
     private final String CORP_TOKEN_KEY = "CORP_ACCESS_TOKEN_KEY";
 
+    private final String JSAPI_CORP_TICKET_KEY = "JSAPI_CORP_TICKET_KEY";
+
+    private final String JSAPI_AGENT_TICKET_KEY = "JSAPI_AGENT_TICKET_KEY";
+
     /**
      * 获取服务商凭证URL
      */
@@ -88,6 +97,12 @@ public class CorpServiceImpl implements CorpService {
     @Value("${snail.okr.wechat.url.corp_token}")
     private String corp_token_url;
 
+    @Value("${snail.okr.wechat.url.js_api_corp_ticket}")
+    private String js_api_corp_ticket_url;
+
+    @Value("${snail.okr.wechat.url.js_api_agent_ticket}")
+    private String js_api_agent_ticket_url;
+
     private WXBizMsgCrypt init(String receiveId) throws AesException {
         return new WXBizMsgCrypt(token, encodingAesKey, receiveId);
     }
@@ -107,12 +122,17 @@ public class CorpServiceImpl implements CorpService {
         logger.info(postData);
         String result = wxBizMsgCrypt.DecryptMsg(msg_signature, timestamp, nonce, postData);
         Map<String, Object> dataMap = XmlUtil.getXmlBodyContext(result);
+        logger.info("解密后的数据：" + dataMap);
         if(dataMap.containsKey("InfoType")){
             String infoType = dataMap.get("InfoType").toString();
             if("suite_ticket".equals(infoType)){    //推送suite_ticket
                 redisTemplate.opsForValue().set(SUITE_TICKET_KEY, dataMap.get("SuiteTicket"));
             }else if("create_auth".equals(infoType)){    //授权通知事件
-                getPermanentCode(dataMap.get("AuthCode").toString());
+                logger.info("收到授权通知，receiveId:" + receiveId);
+                String response = getPermanentCode(dataMap.get("AuthCode").toString());
+                if(StringUtils.isEmpty(response)){
+                    return "fail";
+                }
             }else if("change_auth".equals(infoType)){     //变更授权通知事件
                 String authCorpId = dataMap.get("AuthCorpId").toString();
                 Company company = companyRepo.findByCorpId(authCorpId);
@@ -120,7 +140,11 @@ public class CorpServiceImpl implements CorpService {
                     getAuthInfo(authCorpId, company);
                 }
             }else if("cancel_auth".equals(infoType)){       //取消授权通知事件，删除企业所有相关信息
-
+                String authCorpId = dataMap.get("AuthCorpId").toString();
+                Company company = companyRepo.findByCorpId(authCorpId);
+                if(company != null){
+                    companyService.cleanData(company.getId().toString());
+                }
             }
         }
         return "success";
@@ -132,42 +156,55 @@ public class CorpServiceImpl implements CorpService {
      * @return
      */
     private String getPermanentCode(String preAuthCode){
-        Map<String, Object> params = new HashMap<>(4);
-        params.put("auth_code", preAuthCode);
-        String result = HttpUtil.post(restTemplate, permanent_code_url, params, String.class);
+//        Map<String, Object> params_getPreAuthCode = new HashMap<>(2);
+//        params_getPreAuthCode.put("suite_access_token", refreshSuiteToken());
+        String url = permanent_code_url + "?suite_access_token=%s";
+        url = String.format(url, refreshSuiteToken());
+        JSONObject body = new JSONObject();
+        body.put("auth_code", preAuthCode);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(url, body.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取企业授权码错误 errmsg:" + e.getMessage());
+        }
+        logger.info(result);
         JSONObject json = new JSONObject(result);
-        if(json.has("errcode") && json.getInt("errcode") == 0){
+        if(json.has("access_token")){
             String accessToken = json.getString("access_token");
             Long expires_in = json.getLong("expires_in");
             String permanent_code = json.getString("permanent_code");
             JSONObject authCorpInfo = json.getJSONObject("auth_corp_info");
             String corpId = authCorpInfo.getString("corpid");
-            redisTemplate.opsForValue().set(CORP_TOKEN_KEY + "_" + corpId, accessToken, expires_in - 5, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(CORP_TOKEN_KEY + "_" + corpId, accessToken, expires_in - 5*60, TimeUnit.SECONDS);
             String corp_name = authCorpInfo.getString("corp_name");
             String corp_type = authCorpInfo.getString("corp_type");
             String corp_square_logo_url = authCorpInfo.getString("corp_square_logo_url");
             String corp_full_name = authCorpInfo.getString("corp_full_name");
             JSONObject authInfo = json.getJSONObject("auth_info");
             JSONArray agents = authInfo.getJSONArray("agent");
+            logger.info(agents.toString());
             JSONObject agent = agents.getJSONObject(0);
-            String agentId = agent.getString("agentid");
+            logger.info(agent.toString());
+            int agentId = agent.getInt("agentid");
             String agentName = agent.getString("name");
-            String agentSquareLogoUrl = agent.getString("square_logo_url");
-            String agentRoundLogoUrl = agent.getString("roundLogoUrl");
+            String agentSquareLogoUrl = agent.has("square_logo_url") ? agent.getString("square_logo_url") : null;
+            String agentRoundLogoUrl = agent.has("round_logo_url") ? agent.getString("round_logo_url") : null;
             JSONObject privilege = agent.getJSONObject("privilege");
             Integer level = privilege.getInt("level");
-            Integer[] allowPartyArr = (Integer[]) privilege.get("allow_party");
-            List<Integer> allowParty = Arrays.asList(allowPartyArr);
-            String[] allowUserArr = (String[]) privilege.get("allow_user");
-            List<String> allowUser = Arrays.asList(allowUserArr);
-            Integer[] allowTagArr = (Integer[]) privilege.get("allow_tag");
-            List<Integer> allowTag = Arrays.asList(allowTagArr);
-            Integer[] extraPartyArr = (Integer[]) privilege.get("extra_party");
-            List<Integer> extraParty = Arrays.asList(extraPartyArr);
-            String[] extraUserArr = (String[]) privilege.get("extra_user");
-            List<String> extraUser = Arrays.asList(extraUserArr);
-            Integer[] extraTagArr = (Integer[]) privilege.get("extra_tag");
-            List<Integer> extraTag = Arrays.asList(extraTagArr);
+            JSONArray allowPartyArr =  privilege.getJSONArray("allow_party");
+            List<Object> allowParty = allowPartyArr.toList();
+            JSONArray allowUserArr = privilege.getJSONArray("allow_user");
+            List<Object> allowUser = allowUserArr.toList();
+            JSONArray allowTagArr = privilege.getJSONArray("allow_tag");
+            List<Object> allowTag = allowTagArr.toList();
+            JSONArray extraPartyArr = privilege.getJSONArray("extra_party");
+            List<Object> extraParty = extraPartyArr.toList();
+            JSONArray extraUserArr = privilege.getJSONArray("extra_user");
+            List<Object> extraUser = extraUserArr.toList();
+            JSONArray extraTagArr = privilege.getJSONArray("extra_tag");
+            List<Object> extraTag = extraTagArr.toList();
             JSONObject authUserInfo = json.getJSONObject("auth_user_info");
             String authUserId = authUserInfo.getString("userid");
             String authUserName = authUserInfo.getString("name");
@@ -235,10 +272,20 @@ public class CorpServiceImpl implements CorpService {
      * @param company
      */
     private void getAuthInfo(String corpId, Company company){
-        Map<String, Object> params = new HashMap<>(4);
+        String url = auth_info_url + "?suite_access_token=%s";
+        url = String.format(url, refreshSuiteToken());
+        JSONObject params = new JSONObject();
+//        params.put("suite_access_token", refreshSuiteToken());
         params.put("auth_corpid", corpId);
         params.put("permanent_code", company.getPermanentCode());
-        String result = HttpUtil.post(restTemplate, auth_info_url, params, String.class);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(url, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取企业授权信息错误 errmsg:" + e.getMessage());
+            return;
+        }
         JSONObject json = new JSONObject(result);
         if(json.has("errcode") && json.getInt("errcode") == 0){
             String permanent_code = json.getString("permanent_code");
@@ -250,24 +297,24 @@ public class CorpServiceImpl implements CorpService {
             JSONObject authInfo = json.getJSONObject("auth_info");
             JSONArray agents = authInfo.getJSONArray("agent");
             JSONObject agent = agents.getJSONObject(0);
-            String agentId = agent.getString("agentid");
+            int agentId = agent.getInt("agentid");
             String agentName = agent.getString("name");
             String agentSquareLogoUrl = agent.getString("square_logo_url");
             String agentRoundLogoUrl = agent.getString("roundLogoUrl");
             JSONObject privilege = agent.getJSONObject("privilege");
             Integer level = privilege.getInt("level");
-            Integer[] allowPartyArr = (Integer[]) privilege.get("allow_party");
-            List<Integer> allowParty = Arrays.asList(allowPartyArr);
-            String[] allowUserArr = (String[]) privilege.get("allow_user");
-            List<String> allowUser = Arrays.asList(allowUserArr);
-            Integer[] allowTagArr = (Integer[]) privilege.get("allow_tag");
-            List<Integer> allowTag = Arrays.asList(allowTagArr);
-            Integer[] extraPartyArr = (Integer[]) privilege.get("extra_party");
-            List<Integer> extraParty = Arrays.asList(extraPartyArr);
-            String[] extraUserArr = (String[]) privilege.get("extra_user");
-            List<String> extraUser = Arrays.asList(extraUserArr);
-            Integer[] extraTagArr = (Integer[]) privilege.get("extra_tag");
-            List<Integer> extraTag = Arrays.asList(extraTagArr);
+            JSONArray allowPartyArr =  privilege.getJSONArray("allow_party");
+            List<Object> allowParty = allowPartyArr.toList();
+            JSONArray allowUserArr = privilege.getJSONArray("allow_user");
+            List<Object> allowUser = allowUserArr.toList();
+            JSONArray allowTagArr = privilege.getJSONArray("allow_tag");
+            List<Object> allowTag = allowTagArr.toList();
+            JSONArray extraPartyArr = privilege.getJSONArray("extra_party");
+            List<Object> extraParty = extraPartyArr.toList();
+            JSONArray extraUserArr = privilege.getJSONArray("extra_user");
+            List<Object> extraUser = extraUserArr.toList();
+            JSONArray extraTagArr = privilege.getJSONArray("extra_tag");
+            List<Object> extraTag = extraTagArr.toList();
             company.setPermanentCode(permanent_code);
             company.setCorpSquareLogoUrl(corp_square_logo_url);
             company.setUpdated(System.currentTimeMillis());
@@ -299,16 +346,22 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String refreshProviderAccessToken(){
-        Map<String, Object> params = new HashMap<>(4);
+        JSONObject params = new JSONObject();
         params.put("corpid", corpId);
         params.put("provider_secret", providerSecret);
-        String result = HttpUtil.post(restTemplate, provider_token_url, params, String.class);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(provider_token_url, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取服务商凭证错误 errmsg:" + e.getMessage());
+        }
         JSONObject json = new JSONObject(result);
         if(json.has("errcode") && json.getInt("errcode") != 0){
             logger.error("获取服务商凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
             return null;
         }
-        redisTemplate.opsForValue().set(PROVIDER_ACCESS_TOKEN_KEY, json.getString("provider_access_token"), json.getInt("expires_in") - 5, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(PROVIDER_ACCESS_TOKEN_KEY, json.getString("provider_access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
         logger.info("获取服务商凭证完成：provider_access_token：" + json.getString("provider_access_token"));
         return json.getString("provider_access_token");
     }
@@ -322,7 +375,11 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String refreshSuiteToken(){
-        Map<String, Object> params = new HashMap<>(4);
+        Object val = redisTemplate.opsForValue().get(SUITE_TOKEN_KEY + "_" + suite_id);
+        if(val != null){
+            return val.toString();
+        }
+        JSONObject params = new JSONObject();
         params.put("suite_id", suite_id);
         params.put("suite_secret", suite_secret);
         Object ticket = redisTemplate.opsForValue().get(SUITE_TICKET_KEY);
@@ -331,14 +388,20 @@ public class CorpServiceImpl implements CorpService {
             return null;
         }
         params.put("suite_ticket", ticket.toString());
-        String result = HttpUtil.post(restTemplate, suite_token_url, params, String.class);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(suite_token_url, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取第三方应用凭证错误 errmsg:" + e.getMessage());
+        }
         JSONObject json = new JSONObject(result);
         if(json.has("errcode") && json.getInt("errcode") != 0){
             logger.error("获取第三方应用凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
             return null;
         }
-        redisTemplate.opsForValue().set(SUITE_TOKEN_KEY, json.getString("suite_access_token"), json.getInt("expires_in") - 5, TimeUnit.SECONDS);
-        logger.info("获取服务商凭证完成：suite_access_token：" + json.getString("suite_access_token"));
+        redisTemplate.opsForValue().set(SUITE_TOKEN_KEY + "_" + suite_id, json.getString("suite_access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        logger.info("获取第三方应用凭证完成：suite_access_token：" + json.getString("suite_access_token"));
         return json.getString("suite_access_token");
     }
 
@@ -351,17 +414,104 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String getCorpToken(String authCorpId, String permanentCode){
-        Map<String, Object> params = new HashMap<>(4);
+        Object val = redisTemplate.opsForValue().get(CORP_TOKEN_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
+        String url = corp_token_url + "?suite_access_token=%s";
+        url = String.format(url, refreshSuiteToken());
+        JSONObject params = new JSONObject();
         params.put("auth_corpid", authCorpId);
         params.put("permanent_code", permanentCode);
-        String result = HttpUtil.post(restTemplate, corp_token_url, params, String.class);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(url, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取企业凭证出错：errmsg：" + e.getMessage());
+        }
         JSONObject json = new JSONObject(result);
         if(json.has("errcode") && json.getInt("errcode") != 0){
             logger.error("获取企业凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
             return null;
         }
-        redisTemplate.opsForValue().set(CORP_TOKEN_KEY, json.getString("access_token"), json.getInt("expires_in") - 5, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(CORP_TOKEN_KEY + "_" + authCorpId, json.getString("access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
         logger.info("获取企业凭证完成：corp_access_token：" + json.getString("access_token"));
         return json.getString("access_token");
+    }
+
+    @Override
+    public String getJSAPICorpTicket(String authCorpId, String permanentCode){
+        Object val = redisTemplate.opsForValue().get(JSAPI_CORP_TICKET_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
+        String accessToken = getCorpToken(authCorpId, permanentCode);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendGet(js_api_corp_ticket_url, "access_token=" + accessToken);
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取JSAPI企业凭证出错：errmsg：" + e.getMessage());
+        }
+        JSONObject json = new JSONObject(result);
+        if(!json.has("ticket")){
+            logger.error("获取JSAPI企业凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
+            return null;
+        }
+        redisTemplate.opsForValue().set(JSAPI_CORP_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        logger.info("获取JSAPI企业凭证完成：JSAPI_CORP_TICKET：" + json.getString("ticket"));
+        return json.getString("ticket");
+    }
+
+    @Override
+    public String getJSAPIAgentTicket(String authCorpId){
+        Object val = redisTemplate.opsForValue().get(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId);
+        if(val != null){
+            return val.toString();
+        }
+        String accessToken = refreshSuiteToken();
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendGet(js_api_agent_ticket_url, "access_token=" + accessToken + "&type=agent_config");
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取JSAPI应用凭证出错：errmsg：" + e.getMessage());
+        }
+        JSONObject json = new JSONObject(result);
+        if(!json.has("ticket")){
+            logger.error("获取JSAPI应用凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
+            return null;
+        }
+        redisTemplate.opsForValue().set(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+        logger.info("获取JSAPI应用凭证完成：JSAPI_AGENT_TICKET：" + json.getString("ticket"));
+        return json.getString("ticket");
+    }
+
+    @Override
+    public Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, String type){
+        Map<String, Object> rMap = new HashMap<>(4);
+        String noncestr = StringUtil.randomNumStr(16);
+        rMap.put("noncestr", noncestr);
+        String jsapi_ticket = "";
+        if("suite".equals(type)){
+            jsapi_ticket = getJSAPIAgentTicket(authCorpId);
+            rMap.put("jsapi_ticket", jsapi_ticket);
+        }else {
+            jsapi_ticket = getJSAPICorpTicket(authCorpId, permanentCode);
+            rMap.put("jsapi_ticket", jsapi_ticket);
+        }
+        rMap.put("url", url);
+        long timestamp = System.currentTimeMillis();
+        rMap.put("timestamp", timestamp);
+        String signStr = "jsapi_ticket=" + jsapi_ticket + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
+        try {
+            String sign = SecuritySHA1Utils.shaEncode(signStr);
+            rMap.put("sign", sign);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return rMap;
     }
 }

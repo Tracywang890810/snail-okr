@@ -1,9 +1,15 @@
 package com.seblong.okr.services.impl;
 
+import com.seblong.okr.entities.Company;
+import com.seblong.okr.repositories.*;
+import com.seblong.okr.services.AligningService;
+import com.seblong.okr.services.CommentService;
 import com.seblong.okr.services.CompanyService;
+import com.seblong.okr.services.OKRService;
 import com.seblong.okr.utils.XmlUtil;
 import com.seblong.okr.utils.wx.AesException;
 import com.seblong.okr.utils.wx.WXBizMsgCrypt;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,7 +21,22 @@ import java.util.Map;
 public class CompanyServiceImpl implements CompanyService {
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private CompanyRepository companyRepo;
+
+    @Autowired
+    private EmployeeRepository employeeRepo;
+
+    @Autowired
+    private CommentRepository commentRepo;
+
+    @Autowired
+    private AligningRepository aligningRepo;
+
+    @Autowired
+    private FollowRepository followRepo;
+
+    @Autowired
+    private OKRService okrService;
 
     @Value("${snail.okr.wechat.suite_id}")
     private String suite_id;
@@ -29,22 +50,16 @@ public class CompanyServiceImpl implements CompanyService {
     private final String SUITE_TICKET_KEY = "SUITE_TICKET_KEY";
 
     @Override
-    public String getVerify(String msg_signature, String timestamp, String nonce, String echostr) throws AesException {
-        WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(token, encodingAesKey, suite_id);
-        String result = wxBizMsgCrypt.VerifyURL(msg_signature, timestamp, nonce, echostr);
-        return result;
+    public Company get(String companyId) {
+        return companyRepo.findById(new ObjectId(companyId)).orElse(null);
     }
 
     @Override
-    public String refreshData(String msg_signature, String timestamp, String nonce, String postData) throws AesException {
-        WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(token, encodingAesKey, suite_id);
-        String result = wxBizMsgCrypt.DecryptMsg(msg_signature, timestamp, nonce, postData);
-        Map<String, Object> dataMap = XmlUtil.getXmlBodyContext(result);
-        if(dataMap.containsKey("InfoType")){
-            if("suite_ticket".equals(dataMap.get("InfoType"))){
-                redisTemplate.opsForValue().set(SUITE_TICKET_KEY, dataMap.get("SuiteTicket"));
-            }
-        }
-        return "success";
+    public void cleanData(String companyId){
+        followRepo.deleteByCompanyId(companyId);
+        aligningRepo.deleteByCompanyId(companyId);
+        okrService.deleteAll(companyId);
+        commentRepo.deleteByCompanyId(companyId);
+        employeeRepo.deleteByCorpId(companyId);
     }
 }

@@ -15,4 +15,6 @@ public interface AligningRepository extends MongoRepository<Aligning, ObjectId> 
     List<Aligning> findByTargetO(String objectiveId);
 
     List<Aligning> findByEmployee(String employee);
+
+    void deleteByCompanyId(String companyId);
 }
