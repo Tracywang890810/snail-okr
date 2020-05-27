@@ -113,7 +113,7 @@ public class EnterprisePeriodConfigServiceImpl implements EnterprisePeriodConfig
 		return enterprisePeriodConfigRepo.findByEnterpriseId(enterpriseId);
 	}
 
-	@Scheduled(cron = "0 10 0 24 * ?")
+	@Scheduled(cron = "0 10 0 * * ?")
 	@Override
 	public void scheduledCreatePeriod() {
 
