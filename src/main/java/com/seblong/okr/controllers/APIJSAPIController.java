@@ -44,10 +44,12 @@ public class APIJSAPIController {
     public Map<String, Object> getJSAPISign(
             @RequestParam(value = "companyId") String companyId,
             @RequestParam(value = "url") String url,
-            @RequestParam(value = "type") String type){
+            @RequestParam(value = "type") String type,
+            @RequestParam(value = "timestamp") long timestamp){
         Company company = companyService.get(companyId);
         Map<String, Object> rMap = new HashMap<>(4);
-        rMap.put("signMap", corpService.jsSign(url, company.getCorpId(), company.getPermanentCode(), type));
+        rMap.put("signMap", corpService.jsSign(url, company.getCorpId(), company.getPermanentCode(), timestamp, type));
+        rMap.put("agentId", company.getAgentId());
         rMap.put("status", 200);
         rMap.put("message", "OK");
         return rMap;

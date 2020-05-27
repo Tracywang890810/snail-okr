@@ -25,4 +25,6 @@ public interface EmployeeService {
     Follow getFollow(String employeeId, String target);
 
     List<Employee> queryUser(String keyword, String corpId);
+
+    Employee getLoginInfo(String code);
 }

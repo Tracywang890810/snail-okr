@@ -9,18 +9,22 @@ import com.seblong.okr.repositories.FollowRepository;
 import com.seblong.okr.services.CorpService;
 import com.seblong.okr.services.EmployeeService;
 import com.seblong.okr.services.MessageService;
+import com.seblong.okr.utils.HttpRequestUtil;
 import com.seblong.okr.utils.HttpUtil;
 import com.seblong.okr.utils.OAuth2Util;
 import org.bson.types.ObjectId;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -141,7 +145,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<Employee> queryUser(String keyword, String companyId) {
         String accessToken = corpService.refreshProviderAccessToken();
-        Map<String, Object> params = new HashMap<>(8);
+        String queryUrl = searchUrl + "?provider_access_token=%s";
+        queryUrl = String.format(queryUrl, corpService.refreshProviderAccessToken());
+        JSONObject params = new JSONObject();
         Company company = companyRepo.findById(new ObjectId(companyId)).orElse(null);
         params.put("provider_access_token", accessToken);
         params.put("auth_corpid", company.getCorpId());
@@ -150,7 +156,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         params.put("agentid", company.getAgentId());
         params.put("offset", 0);
         params.put("limit", 200);
-        String result = HttpUtil.post(restTemplate, searchUrl, params, String.class);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(queryUrl, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("用户搜索失败" + e.getMessage());
+        }
         JSONObject json = new JSONObject(result);
         logger.info("用户搜索返回数据" + result);
         if(json.getInt("errcode") == 0){
@@ -158,11 +170,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             boolean isLast = json.getBoolean("is_last");
             JSONObject queryResult = json.getJSONObject("query_result");
             JSONObject user = queryResult.getJSONObject("user");
-            String[] userIds = (String[]) user.get("userid");
-            for (String userId : userIds){
-                employeeList.add(employeeRepo.findByUserIdAndCorpId(userId, companyId));
+            JSONArray userIds = user.getJSONArray("userid");
+            for (Object userId : userIds){
+                employeeList.add(employeeRepo.findByUserIdAndCorpId(userId.toString(), companyId));
             }
             return employeeList;
+        }else {
+            corpService.disableProviderAccessToken();
+            queryUser(keyword, companyId);
         }
         return null;
     }
@@ -203,6 +218,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employee.setCorpId(company.getId().toString());
                     employee.setOpenId(resObj.getString("open_userid"));
                 }
+                employee = getUserInfo(accessToken, resObj.getString("user_ticket"), employee);
                 return employee;
             }else {
                 logger.error("解析用户id信息失败");
@@ -250,6 +266,74 @@ public class EmployeeServiceImpl implements EmployeeService {
         return null;
     }
 
+    /**
+     * 根据用户id获取用户姓名和头像
+     * @param accessToken
+     * @param employee
+     * @return
+     */
+    private Employee getUserInfo(String accessToken, String userTicket, Employee employee){
+        String url = "https://qyapi.weixin.qq.com/cgi-bin/service/getuserdetail3rd?suite_access_token=" + accessToken;
+        JSONObject parmas = new JSONObject();
+        parmas.put("user_ticket", userTicket);
+        String response = null;
+        try {
+            response = HttpRequestUtil.sendPost(url, parmas.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取用户敏感信息失败 errmsg:" + e.getMessage());
+        }
+        JSONObject resObj = new JSONObject(response);
+        int errCode = resObj.getInt("errcode");
+        if(errCode == 0){
+            employee.setAvatar(resObj.has("avatar") ? resObj.getString("avatar") : null);
+            employee.setGender(resObj.has("gender") ? resObj.getString("gender") : "0");
+            employee.setName(resObj.has("name") ? resObj.getString("name") : null);
+            return employee;
+        }else {
+            logger.info("获取用户敏感信息失败，errcode:" + errCode + ", errmsg:" + resObj.getString("errmsg"));
+        }
+        return null;
+    }
 
+    /**
+     * 获取单点登录用户信息
+     * @param code
+     * @return
+     */
+    @Override
+    public Employee getLoginInfo(String code){
+        String url = "https://qyapi.weixin.qq.com/cgi-bin/service/get_login_info" + "?access_token=" + corpService.refreshProviderAccessToken();
+        JSONObject params = new JSONObject();
+        params.put("auth_code", code);
+        String result = null;
+        try {
+            result = HttpRequestUtil.sendPost(url, params.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取单点登录用户信息失败" + e.getMessage());
+        }
+        JSONObject json = new JSONObject(result);
+        if(json.has("user_info")){
+            JSONObject userInfo = json.getJSONObject("user_info");
+            JSONObject corpInfo = json.getJSONObject("corp_info");
+            String corpId = corpInfo.getString("corpid");
+            String userId = userInfo.getString("userid");
+            Company company = companyRepo.findByCorpId(corpId);
+            Employee employee = employeeRepo.findByUserIdAndCorpId(userId, company.getId().toString());
+            if(employee == null){
+                employee = new Employee();
+                employee.setAvatar(userInfo.getString("avatar"));
+                employee.setName(userInfo.getString("name"));
+                employee.setCorpId(company.getId().toString());
+                employee.setUserId(userId);
+                employee = employeeRepo.save(employee);
+            }
+            return employee;
+        }else {
+            logger.error("获取单点登录用户信息失败, errmsg:" + json.toString());
+            return null;
+        }
+    }
 
 }

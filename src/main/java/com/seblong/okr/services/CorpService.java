@@ -11,6 +11,8 @@ public interface CorpService {
 
     String refreshProviderAccessToken();
 
+    void disableProviderAccessToken();
+
     String refreshSuiteToken();
 
     String getCorpToken(String authCorpId, String permanentCode);
@@ -19,5 +21,5 @@ public interface CorpService {
 
     String getJSAPIAgentTicket(String authCorpId);
 
-    Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, String type);
+    Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, long timestamp, String type);
 }
