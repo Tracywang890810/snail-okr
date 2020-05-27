@@ -171,7 +171,7 @@ public class OKR implements Serializable {
 			if( this.keyResults.size() > 0 ) {
 				int maxIndex = this.keyResults.size() - 1;
 				if( oldRank <= maxIndex && newRank <= maxIndex ) {
-					this.keyResults.add(newRank, this.keyResults.get(oldRank));
+					this.keyResults.add(newRank,  this.keyResults.remove(oldRank));
 					this.updated = System.currentTimeMillis();
 					return true;
 				}
