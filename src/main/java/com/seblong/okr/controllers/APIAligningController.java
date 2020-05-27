@@ -114,6 +114,7 @@ public class APIAligningController {
                 top.put("objective", objectiveTop);
                 Employee employee = employeeService.findById(aligningTop.getTargetE());
                 top.put("employee", employee);
+                top.put("unique", aligningTop.getId().toString());
             }else {
                 aligningService.remove(aligningTop.getId().toString());
             }
@@ -131,6 +132,7 @@ public class APIAligningController {
                 }else {
                     map.put("employee", employee);
                     map.put("objective", objective);
+                    map.put("unique", aligning.getId().toString());
                     children.add(map);
                 }
             });
@@ -163,6 +165,7 @@ public class APIAligningController {
                 }else {
                     map.put("employee", employee);
                     map.put("objective", objective);
+                    map.put("unique", aligning.getId().toString());
                     children.add(map);
                 }
             });

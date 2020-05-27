@@ -1,6 +1,7 @@
 package com.seblong.okr.services.impl;
 
 import com.seblong.okr.entities.Company;
+import com.seblong.okr.entities.Employee;
 import com.seblong.okr.repositories.CompanyRepository;
 import com.seblong.okr.services.CompanyService;
 import com.seblong.okr.services.CorpService;
@@ -346,6 +347,10 @@ public class CorpServiceImpl implements CorpService {
      */
     @Override
     public String refreshProviderAccessToken(){
+        Object accessTokenObj = redisTemplate.opsForValue().get(PROVIDER_ACCESS_TOKEN_KEY);
+        if(accessTokenObj != null){
+            return String.valueOf(accessTokenObj);
+        }
         JSONObject params = new JSONObject();
         params.put("corpid", corpId);
         params.put("provider_secret", providerSecret);
@@ -364,6 +369,14 @@ public class CorpServiceImpl implements CorpService {
         redisTemplate.opsForValue().set(PROVIDER_ACCESS_TOKEN_KEY, json.getString("provider_access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
         logger.info("获取服务商凭证完成：provider_access_token：" + json.getString("provider_access_token"));
         return json.getString("provider_access_token");
+    }
+
+    /**
+     * 作废服务商凭证
+     */
+    @Override
+    public void disableProviderAccessToken(){
+        redisTemplate.delete(PROVIDER_ACCESS_TOKEN_KEY);
     }
 
     /**
@@ -403,6 +416,14 @@ public class CorpServiceImpl implements CorpService {
         redisTemplate.opsForValue().set(SUITE_TOKEN_KEY + "_" + suite_id, json.getString("suite_access_token"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
         logger.info("获取第三方应用凭证完成：suite_access_token：" + json.getString("suite_access_token"));
         return json.getString("suite_access_token");
+    }
+
+    private void cleanSuiteToken(){
+        redisTemplate.delete(SUITE_TOKEN_KEY + "_" + suite_id);
+    }
+
+    private void cleanCorpToken(String authCorpId){
+        redisTemplate.delete(CORP_TOKEN_KEY + "_" + authCorpId);
     }
 
     /**
@@ -464,32 +485,42 @@ public class CorpServiceImpl implements CorpService {
         return json.getString("ticket");
     }
 
+
     @Override
     public String getJSAPIAgentTicket(String authCorpId){
         Object val = redisTemplate.opsForValue().get(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId);
         if(val != null){
             return val.toString();
         }
-        String accessToken = refreshSuiteToken();
+        Company company = companyRepo.findByCorpId(authCorpId);
+        String accessToken = getCorpToken(authCorpId, company.getPermanentCode());
+        logger.info(accessToken);
         String result = null;
         try {
             result = HttpRequestUtil.sendGet(js_api_agent_ticket_url, "access_token=" + accessToken + "&type=agent_config");
+
+            JSONObject json = new JSONObject(result);
+            if(!json.has("ticket")){
+                cleanCorpToken(authCorpId);
+                logger.error("获取JSAPI应用凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
+                result = HttpRequestUtil.sendGet(js_api_agent_ticket_url, "access_token=" + getCorpToken(authCorpId, company.getPermanentCode()) + "&type=agent_config");
+                json = new JSONObject(result);
+                redisTemplate.opsForValue().set(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+                logger.info("获取JSAPI应用凭证完成：JSAPI_AGENT_TICKET：" + json.getString("ticket"));
+                return json.getString("ticket");
+            }
+            redisTemplate.opsForValue().set(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
+            logger.info("获取JSAPI应用凭证完成：JSAPI_AGENT_TICKET：" + json.getString("ticket"));
+            return json.getString("ticket");
         } catch (IOException e) {
             e.printStackTrace();
             logger.error("获取JSAPI应用凭证出错：errmsg：" + e.getMessage());
-        }
-        JSONObject json = new JSONObject(result);
-        if(!json.has("ticket")){
-            logger.error("获取JSAPI应用凭证出错：errcode：" + json.getInt("errcode") + "，errmsg：" + json.getString("errmsg"));
             return null;
         }
-        redisTemplate.opsForValue().set(JSAPI_AGENT_TICKET_KEY + "_" + authCorpId, json.getString("ticket"), json.getInt("expires_in") - 5*60, TimeUnit.SECONDS);
-        logger.info("获取JSAPI应用凭证完成：JSAPI_AGENT_TICKET：" + json.getString("ticket"));
-        return json.getString("ticket");
     }
 
     @Override
-    public Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, String type){
+    public Map<String, Object> jsSign(String url, String authCorpId, String permanentCode, long timestamp, String type){
         Map<String, Object> rMap = new HashMap<>(4);
         String noncestr = StringUtil.randomNumStr(16);
         rMap.put("noncestr", noncestr);
@@ -502,7 +533,6 @@ public class CorpServiceImpl implements CorpService {
             rMap.put("jsapi_ticket", jsapi_ticket);
         }
         rMap.put("url", url);
-        long timestamp = System.currentTimeMillis();
         rMap.put("timestamp", timestamp);
         String signStr = "jsapi_ticket=" + jsapi_ticket + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
         try {
@@ -514,4 +544,5 @@ public class CorpServiceImpl implements CorpService {
         }
         return rMap;
     }
+
 }

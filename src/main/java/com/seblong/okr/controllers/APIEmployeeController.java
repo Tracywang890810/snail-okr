@@ -128,6 +128,22 @@ public class APIEmployeeController {
     }
 
     /**
+     * 企业微信管理后台单点登录业务设置
+     * @param code
+     * @return
+     */
+    @PostMapping(value = "/sso/login")
+    public ResponseEntity<StandardRestResource> ssoLogin(
+            @RequestParam(value = "code", required = false) String code) {
+        System.out.println("code=" + code);
+        Employee employee = employeeService.getLoginInfo(code);
+        if(employee == null){
+            return new ResponseEntity<StandardRestResource>(new StandardRestResource(406, "oauth-error"), HttpStatus.OK);
+        }
+        return new ResponseEntity<StandardRestResource>(new StandardEntityResource<Employee>(employee), HttpStatus.OK);
+    }
+
+    /**
      * 根据用户名前缀模糊查询用户
      * @param keyword
      * @return

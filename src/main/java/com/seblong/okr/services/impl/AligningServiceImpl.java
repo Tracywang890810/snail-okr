@@ -23,7 +23,7 @@ public class AligningServiceImpl implements AligningService {
         aligning.setEmployee(employeeId);
         aligning.setObjective(objectiveId);
         aligning.setPeriod(periodId);
-        aligning.setTargetE(target.getUserId());
+        aligning.setTargetE(target.getId().toString());
         aligning.setCompanyId(target.getCorpId());
         aligning.setTargetO(targetOId);
         aligning = aligningRepo.save(aligning);
