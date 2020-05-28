@@ -12,6 +12,7 @@ import com.seblong.okr.services.MessageService;
 import com.seblong.okr.utils.HttpRequestUtil;
 import com.seblong.okr.utils.HttpUtil;
 import com.seblong.okr.utils.OAuth2Util;
+import org.apache.http.client.utils.DateUtils;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -110,9 +111,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         follow = new Follow(from.getId().toString(), target.getId().toString(), System.currentTimeMillis());
         follow = followRepo.save(follow);
-        Company company = companyRepo.findById(new ObjectId(target.getCorpId())).orElse(null);
-        String description = "$userName=" + from.getUserId() + "$关注了您。";
-        messageService.sendMessageToUser(target.getUserId(), target.getCorpId(), company.getPermanentCode(), company.getAgentId(), "关注通知", description, redirectUrl, null, null, null, null);
+        if(!follow.getTarget().equals(follow.getEmployee())){
+            Company company = companyRepo.findById(new ObjectId(target.getCorpId())).orElse(null);
+            String time = DateUtils.formatDate(new Date(), "yyyy年MM月dd日");
+            String description = "<div class=\"gray\">" + time + "</div> <div class=\"highlight\">有新的用户关注了你</div>";
+            messageService.sendMessageToUser(follow.getTarget(), company.getCorpId(), company.getPermanentCode(), company.getAgentId(), "关注通知", description, redirectUrl, null, null, null, null);
+        }
         return follow;
     }
 
@@ -169,10 +173,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             List<Employee> employeeList = new ArrayList<>();
             boolean isLast = json.getBoolean("is_last");
             JSONObject queryResult = json.getJSONObject("query_result");
-            JSONObject user = queryResult.getJSONObject("user");
-            JSONArray userIds = user.getJSONArray("userid");
-            for (Object userId : userIds){
-                employeeList.add(employeeRepo.findByUserIdAndCorpId(userId.toString(), companyId));
+            if(queryResult.has("user")){
+                JSONObject user = queryResult.getJSONObject("user");
+                JSONArray userIds = user.getJSONArray("userid");
+                for (Object userId : userIds){
+                    employeeList.add(employeeRepo.findByUserIdAndCorpId(userId.toString(), companyId));
+                }
             }
             return employeeList;
         }else {

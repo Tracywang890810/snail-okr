@@ -28,11 +28,11 @@ public class CompanyInterceptor extends HandlerInterceptorAdapter {
 			ResponseUtil.outputJson( 401, "error-companyId", response );
 			return false;
 		}
-		long current = System.currentTimeMillis();
-		if(current > company.getEnd()){
-			ResponseUtil.outputJson( 401, "expired-auth", response );
-			return false;
-		}
+//		long current = System.currentTimeMillis();
+//		if(current > company.getEnd()){
+//			ResponseUtil.outputJson( 401, "expired-auth", response );
+//			return false;
+//		}
 		return true;
 	}
 }
