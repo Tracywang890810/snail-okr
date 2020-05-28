@@ -1,5 +1,6 @@
 package com.seblong.okr.config;
 
+import com.seblong.okr.interceptors.CompanyInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -9,6 +10,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig {
 	
+	@Bean
+	public CompanyInterceptor companyInterceptor(){
+		return new CompanyInterceptor();
+	}
 
 	@Bean
 	public WebMvcConfigurer webMvcConfigurer() {
@@ -20,9 +25,7 @@ public class WebConfig {
 
 			@Override
 			public void addInterceptors(InterceptorRegistry registry) {
-				
-//				registry.addInterceptor(signInterceptor()).addPathPatterns("/**");
-				
+				registry.addInterceptor(companyInterceptor()).excludePathPatterns("/manage/**", "/corp/**", "/employee/sync", "/employee/login", "/employee/sso/login", "/employee/oauth", "/employee/accessToken");
 			}
 		};
 	}

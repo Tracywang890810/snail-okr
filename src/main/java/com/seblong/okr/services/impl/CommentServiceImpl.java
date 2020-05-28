@@ -10,12 +10,14 @@ import com.seblong.okr.services.CommentService;
 import com.seblong.okr.services.CompanyService;
 import com.seblong.okr.services.EmployeeService;
 import com.seblong.okr.services.MessageService;
+import org.apache.http.client.utils.DateUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,10 +49,13 @@ public class CommentServiceImpl implements CommentService {
         comment.setPeriod(period);
         comment.setCompanyId(owner.getCorpId());
         comment = commentRepo.save(comment);
-        Employee employee = employeeService.findById(employeeId);
-        Company company = companyRepo.findById(new ObjectId(owner.getCorpId())).orElse(null);
-        String description = "$userName=" + employee.getUserId() + "$关注了您。";
-        messageService.sendMessageToUser(owner.getUserId(), company.getCorpId(), company.getPermanentCode(), company.getAgentId(), "评论通知", description, redirectUrl, null, null, null, null);
+        if(!employeeId.equals(ownerId)){
+            Company company = companyRepo.findById(new ObjectId(owner.getCorpId())).orElse(null);
+            String time = DateUtils.formatDate(new Date(), "yyyy年MM月dd日");
+            String description = "<div class=\"gray\">" + time + "</div> <div class=\"normal\">你收到了一条新的评论</div><div class=\"highlight\">" + content + "</div>";
+            messageService.sendMessageToUser(owner.getUserId(), company.getCorpId(), company.getPermanentCode(), company.getAgentId(), "评论通知", description, redirectUrl, null, null, null, null);
+        }
+//        Employee employee = employeeService.findById(employeeId);
         return comment;
     }
 

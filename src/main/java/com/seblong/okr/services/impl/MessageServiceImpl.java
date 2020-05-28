@@ -1,11 +1,8 @@
 package com.seblong.okr.services.impl;
 
-import com.seblong.okr.entities.Company;
-import com.seblong.okr.repositories.CompanyRepository;
 import com.seblong.okr.services.CorpService;
 import com.seblong.okr.services.MessageService;
 import com.seblong.okr.utils.HttpRequestUtil;
-import com.seblong.okr.utils.HttpUtil;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
