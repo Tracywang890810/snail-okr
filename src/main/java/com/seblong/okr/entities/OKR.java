@@ -271,7 +271,7 @@ public class OKR implements Serializable {
 		}
 
 		public KeyResult(String title) {
-			this(title, -1, -1, -1, 0);
+			this(title, -1, -1, 0, 0);
 		}
 		
 		public KeyResult() {
